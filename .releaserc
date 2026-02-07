@@ -42,7 +42,7 @@
     [
       "@kilianpaquier/semantic-release-backmerge",
       {
-        "targets": [{ "from": "main", "to": "dev" }
+        "targets": [{ "from": "main", "to": "dev" }]
       }
     ]
   ]
