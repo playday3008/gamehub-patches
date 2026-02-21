@@ -1,3 +1,13 @@
+## [1.0.5](https://github.com/playday3008/gamehub-patches/compare/v1.0.4...v1.0.5) (2026-02-21)
+
+
+### Bug Fixes
+
+* **ci:** Add empty root build.gradle.kts for Dependabot ([0350b40](https://github.com/playday3008/gamehub-patches/commit/0350b402b19cfe4fcbfbaff1a55790f24fb9afce))
+* **ci:** Add explicit permissions to build PR workflow ([4969f91](https://github.com/playday3008/gamehub-patches/commit/4969f9175ef53fa9259e2669ff242a29d63196d7))
+* **ci:** Add registry auth for Dependabot Gradle updates ([311c526](https://github.com/playday3008/gamehub-patches/commit/311c526fe65e5726c1f635a98d3ad6f525349ec3))
+* **ci:** Replace deprecated repo-sync/pull-request with gh CLI ([de9dab6](https://github.com/playday3008/gamehub-patches/commit/de9dab6859e4749330a88775cc839f13ca574642))
+
 ## [1.0.4](https://github.com/ReVanced/revanced-patches-template/compare/v1.0.3...v1.0.4) (2024-11-05)
 
 ## [1.0.4-dev.2](https://github.com/ReVanced/revanced-patches-template/compare/v1.0.4-dev.1...v1.0.4-dev.2) (2024-11-05)
