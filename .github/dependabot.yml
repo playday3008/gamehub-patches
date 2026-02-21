@@ -1,4 +1,11 @@
 version: 2
+registries:
+  github-packages:
+    type: maven-repository
+    url: https://maven.pkg.github.com/revanced/registry
+    username: x-access-token
+    password: ${{ secrets.REVANCED_REGISTRY_TOKEN }}
+
 updates:
   - package-ecosystem: github-actions
     labels: []
@@ -16,6 +23,8 @@ updates:
 
   - package-ecosystem: gradle
     labels: []
+    registries:
+      - github-packages
     directory: /
     target-branch: dev
     schedule:
