@@ -1,0 +1,72 @@
+package app.revanced.patches.gamehub.ui.accountvalue
+
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
+import app.revanced.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+
+private const val EXTENSION_CLASS =
+    "Lapp/revanced/extension/gamehub/ui/AccountCurrencyHelper;"
+
+@Suppress("unused")
+val accountCurrencyPatch = bytecodePatch(
+    name = "Account currency display",
+    description = "Shows the real currency code instead of hardcoded ¥ in the Steam account value label.",
+) {
+    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    dependsOn(sharedGamehubExtensionPatch)
+
+    execute {
+        // Injection A: Capture the currency string from every PICS price conversion.
+        // SteamServiceImpl.C() starts with:
+        //   0: const-string p0, "<this>"
+        //   1: invoke-static {p1, p0}, Intrinsics.g(...)
+        // We inject at index 2, using v0 as a scratch register (it hasn't been assigned yet).
+        picsAppPriceConverterFingerprint.method.addInstructions(
+            2,
+            """
+                invoke-virtual {p1}, Lcom/xj/standalone/steam/data/db/tables/apps/SteamPicsAppPrice;->getCurrency()Ljava/lang/String;
+                move-result-object v0
+                invoke-static {v0}, $EXTENSION_CLASS->setCurrency(Ljava/lang/String;)V
+            """,
+        )
+
+        // Injection B: Update the account value title on the home screen user info card.
+        // SteamUserInfoViewHolder.z(SteamAccount) ends with return-void.
+        // p0 = this (VBViewHolder), so we call f() to get the binding.
+        steamUserInfoBindFingerprint.method.apply {
+            val returnIndex = implementation!!.instructions.size - 1
+            addInstructions(
+                returnIndex,
+                """
+                    invoke-virtual {p0}, Lcom/xj/common/view/adapter/VBViewHolder;->f()Landroidx/viewbinding/ViewBinding;
+                    move-result-object v0
+                    check-cast v0, Lcom/xj/landscape/launcher/databinding/LlauncherItemSteamUserInfoBinding;
+                    iget-object v0, v0, Lcom/xj/landscape/launcher/databinding/LlauncherItemSteamUserInfoBinding;->tvAccountValueTitle:Landroid/widget/TextView;
+                    invoke-static {v0}, $EXTENSION_CLASS->updateLabel(Landroid/widget/TextView;)V
+                """,
+            )
+        }
+
+        // Injection C: Update the account value title on the personal info screen.
+        // SteamPersonalInfoFragment.V0() casts p0 to the binding, then extracts tvAccountValue.
+        // We inject right after the check-cast (while p0 is still the binding) to grab
+        // tvAccountValueT (the title) and update it. v0 is safe to use as scratch here.
+        personalInfoAccountValueFingerprint.method.apply {
+            val checkCastIndex = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.CHECK_CAST &&
+                    (this as? ReferenceInstruction)?.reference?.toString() ==
+                    "Lcom/xj/winemu/databinding/WinemuFSteamPersonalInfoBinding;"
+            }
+            addInstructions(
+                checkCastIndex + 1,
+                """
+                    iget-object v0, p0, Lcom/xj/winemu/databinding/WinemuFSteamPersonalInfoBinding;->tvAccountValueT:Landroid/widget/TextView;
+                    invoke-static {v0}, $EXTENSION_CLASS->updateLabel(Landroid/widget/TextView;)V
+                """,
+            )
+        }
+    }
+}
