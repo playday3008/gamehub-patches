@@ -13,14 +13,26 @@ jobs:
   pull-request:
     name: Open pull request
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Open pull request
-        uses: repo-sync/pull-request@v2
-        with:
-          destination_branch: 'main'
-          pr_title: 'chore: ${{ env.MESSAGE }}'
-          pr_body: 'This pull request will ${{ env.MESSAGE }}.'
-          pr_draft: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_TITLE: 'chore: ${{ env.MESSAGE }}'
+          PR_BODY: 'This pull request will ${{ env.MESSAGE }}.'
+        run: |
+          if gh pr list --head "${{ github.ref_name }}" --base main --json number --jq '.[0].number' | grep -q .; then
+            echo "PR already exists"
+          else
+            gh pr create \
+              --base main \
+              --head "${{ github.ref_name }}" \
+              --title "$PR_TITLE" \
+              --body "$PR_BODY" \
+              --draft
+          fi
