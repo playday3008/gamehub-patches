@@ -1,13 +1,13 @@
-group = "app.revanced"
+group = "com.github.playday3008"
 
 patches {
     about {
-        name = "ReVanced Patches template"
-        description = "Patches template for ReVanced"
-        source = "git@github.com:revanced/revanced-patches-template.git"
-        author = "ReVanced"
-        contact = "contact@revanced.app"
-        website = "https://revanced.app"
+        name = "GameHub for ReVanced"
+        description = "GameHub Patches for ReVanced"
+        source = "git@github.com:playday3008/gamehub-patches.git"
+        author = "PlayDay"
+        contact = "https://github.com/playday3008"
+        website = "https://github.com/playday3008/gamehub-patches"
         license = "GNU General Public License v3.0"
     }
 }
