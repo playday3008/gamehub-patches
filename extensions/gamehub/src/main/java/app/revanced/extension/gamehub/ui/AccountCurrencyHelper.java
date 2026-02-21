@@ -1,5 +1,7 @@
 package app.revanced.extension.gamehub.ui;
 
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
@@ -8,12 +10,13 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Replaces the hardcoded "Account (¥)" label with the real currency code
- * from the Steam PICS database (e.g. "Account (USD)").
+ * Replaces the hardcoded currency symbols (¥/￥) with the real currency code
+ * from the Steam PICS database (e.g. "Account (USD)", "Game Price (USD)").
  */
 public final class AccountCurrencyHelper {
     private static String sCurrency = null;
-    private static final List<WeakReference<TextView>> sPendingLabels = new ArrayList<>();
+    private static final List<WeakReference<TextView>> sPendingAccountLabels = new ArrayList<>();
+    private static final List<WeakReference<TextView>> sPendingGamePriceLabels = new ArrayList<>();
 
     /**
      * Called from SteamServiceImpl.C() for every game price conversion.
@@ -24,12 +27,17 @@ public final class AccountCurrencyHelper {
         if (currency == null || currency.isEmpty()) return;
         sCurrency = currency;
 
-        Iterator<WeakReference<TextView>> it = sPendingLabels.iterator();
+        flushPending(sPendingAccountLabels, "Account", currency);
+        flushPending(sPendingGamePriceLabels, "Game Price", currency);
+    }
+
+    private static void flushPending(List<WeakReference<TextView>> list, String prefix, String currency) {
+        Iterator<WeakReference<TextView>> it = list.iterator();
         while (it.hasNext()) {
             TextView tv = it.next().get();
             it.remove();
             if (tv != null) {
-                String label = "Account (" + currency + ")";
+                String label = prefix + " (" + currency + ")";
                 tv.post(() -> tv.setText(label));
             }
         }
@@ -45,7 +53,27 @@ public final class AccountCurrencyHelper {
         if (sCurrency != null) {
             labelView.setText("Account (" + sCurrency + ")");
         } else {
-            sPendingLabels.add(new WeakReference<>(labelView));
+            sPendingAccountLabels.add(new WeakReference<>(labelView));
+        }
+    }
+
+    /**
+     * Finds the game price title label (an anonymous sibling of the given container)
+     * and updates it to show the real currency instead of hardcoded ￥.
+     */
+    public static void updateGamePriceLabel(View gamePriceContainer) {
+        if (gamePriceContainer == null) return;
+        if (!(gamePriceContainer.getParent() instanceof ViewGroup)) return;
+        ViewGroup parent = (ViewGroup) gamePriceContainer.getParent();
+        int index = parent.indexOfChild(gamePriceContainer);
+        if (index < 0 || index + 1 >= parent.getChildCount()) return;
+        View next = parent.getChildAt(index + 1);
+        if (!(next instanceof TextView)) return;
+        TextView label = (TextView) next;
+        if (sCurrency != null) {
+            label.setText("Game Price (" + sCurrency + ")");
+        } else {
+            sPendingGamePriceLabels.add(new WeakReference<>(label));
         }
     }
 }

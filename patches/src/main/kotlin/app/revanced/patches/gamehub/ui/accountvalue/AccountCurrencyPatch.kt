@@ -13,7 +13,7 @@ private const val EXTENSION_CLASS =
 @Suppress("unused")
 val accountCurrencyPatch = bytecodePatch(
     name = "Account currency display",
-    description = "Shows the real currency code instead of hardcoded ¥ in the Steam account value label.",
+    description = "Shows the real currency code instead of hardcoded ¥/￥ in the Steam account value and game price labels.",
 ) {
     compatibleWith("com.xiaoji.egggame"("5.3.5"))
     dependsOn(sharedGamehubExtensionPatch)
@@ -50,10 +50,11 @@ val accountCurrencyPatch = bytecodePatch(
             )
         }
 
-        // Injection C: Update the account value title on the personal info screen.
+        // Injection C: Update the account value title and game price title on the personal info screen.
         // SteamPersonalInfoFragment.V0() casts p0 to the binding, then extracts tvAccountValue.
         // We inject right after the check-cast (while p0 is still the binding) to grab
-        // tvAccountValueT (the title) and update it. v0 is safe to use as scratch here.
+        // tvAccountValueT (the title) and update it, then also grab viewGamePrice to find
+        // and update the anonymous "Game Price (￥)" sibling label. v0 is safe to use as scratch.
         personalInfoAccountValueFingerprint.method.apply {
             val checkCastIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.CHECK_CAST &&
@@ -65,6 +66,8 @@ val accountCurrencyPatch = bytecodePatch(
                 """
                     iget-object v0, p0, Lcom/xj/winemu/databinding/WinemuFSteamPersonalInfoBinding;->tvAccountValueT:Landroid/widget/TextView;
                     invoke-static {v0}, $EXTENSION_CLASS->updateLabel(Landroid/widget/TextView;)V
+                    iget-object v0, p0, Lcom/xj/winemu/databinding/WinemuFSteamPersonalInfoBinding;->viewGamePrice:Lcom/xj/lib/shape/view/ShapeView;
+                    invoke-static {v0}, $EXTENSION_CLASS->updateGamePriceLabel(Landroid/view/View;)V
                 """,
             )
         }
