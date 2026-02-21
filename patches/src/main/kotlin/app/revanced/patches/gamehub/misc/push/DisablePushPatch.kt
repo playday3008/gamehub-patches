@@ -70,5 +70,8 @@ val disablePushPatch = bytecodePatch(
             }
             replaceInstruction(constIdx, "const/4 v0, 0x2")
         }
+
+        // Remove JPush SDK class tree from DEX.
+        classes.removeIf { it.type.startsWith("Lcn/jpush/") }
     }
 }

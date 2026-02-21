@@ -46,6 +46,11 @@ private val analyticsCleanupResourcePatch = resourcePatch {
         // Remove Tencent Open SDK tracking config.
         delete("assets/com.tencent.open.config.json")
 
+        // Remove Firebase resources.
+        delete("res/drawable-xxhdpi/firebase_lockup_400.png")
+        delete("res/raw/firebase_common_keep.xml")
+        delete("res/raw/firebase_crashlytics_keep.xml")
+
         // Remove analytics components, meta-data, and ad-tracking permissions from the manifest.
         document("AndroidManifest.xml").use { dom ->
             // Application-level components (providers, services, activities, receivers, meta-data).
@@ -88,7 +93,7 @@ val disableAnalyticsPatch = bytecodePatch(
     dependsOn(analyticsCleanupResourcePatch, appNullSafetyPatch)
 
     execute {
-        // Umeng
+        // Umeng — disable wrapper methods in app code.
         umengAppFingerprint.method.returnEarly()
         umengAppModuleFingerprint.method.returnEarly()
         iUmengServiceImplAFingerprint.method.returnEarly()
@@ -99,12 +104,13 @@ val disableAnalyticsPatch = bytecodePatch(
         iUmengServiceImplFFingerprint.method.returnEarly()
         iUmengServiceImplOnEventFingerprint.method.returnEarly()
 
-        // Firebase — prevent auto-init entirely.
-        firebaseInitProviderFingerprint.method.returnEarly()
-
-        // Jiguang — kill session analytics (PushSA).
-        pushSAOnResumeFingerprint.method.returnEarly()
-        pushSAOnPauseFingerprint.method.returnEarly()
-        pushSAOnKillProcessFingerprint.method.returnEarly()
+        // Remove analytics/tracking SDK class trees from DEX.
+        classes.removeIf { classDef ->
+            val type = classDef.type
+            type.startsWith("Lcom/umeng/") ||
+                type.startsWith("Lcn/jiguang/") ||
+                type.startsWith("Lcom/google/firebase/") ||
+                type.startsWith("Lcom/uc/crashsdk/")
+        }
     }
 }

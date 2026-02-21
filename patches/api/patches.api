@@ -32,7 +32,7 @@ public final class app/revanced/patches/gamehub/misc/analytics/DisableAnalyticsP
 }
 
 public final class app/revanced/patches/gamehub/misc/cleanup/ManifestCleanupPatchKt {
-	public static final fun getManifestCleanupPatch ()Lapp/revanced/patcher/patch/ResourcePatch;
+	public static final fun getManifestCleanupPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
 
 public final class app/revanced/patches/gamehub/misc/cleanup/PromoRemovalPatchKt {

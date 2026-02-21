@@ -2,8 +2,24 @@ package app.revanced.patches.gamehub.misc.ota
 
 import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patcher.patch.resourcePatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+
+private val otaCleanupResourcePatch = resourcePatch {
+    execute {
+        val libDir = get("lib")
+        if (libDir.exists() && libDir.isDirectory) {
+            libDir.listFiles()?.forEach { archDir ->
+                if (archDir.isDirectory) {
+                    listOf("libJieLiUsbOta.so", "libjl_ota_auth.so").forEach { lib ->
+                        if (archDir.resolve(lib).exists()) delete("lib/${archDir.name}/$lib")
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Suppress("unused")
 val disableOtaUpdatesPatch = bytecodePatch(
@@ -11,6 +27,8 @@ val disableOtaUpdatesPatch = bytecodePatch(
     description = "Blocks OTA update server URL.",
 ) {
     compatibleWith("com.xiaoji.egggame"("5.3.5"))
+
+    dependsOn(otaCleanupResourcePatch)
 
     execute {
         baseOtaRepositoryFingerprint.method.apply {

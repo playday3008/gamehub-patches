@@ -1,20 +1,26 @@
 package app.revanced.patches.gamehub.misc.cleanup
 
+import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.util.asSequence
 import app.revanced.util.getNode
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 
-@Suppress("unused")
-val manifestCleanupPatch = resourcePatch(
-    name = "Manifest cleanup",
-    description = "Removes unnecessary permissions, payment SDKs, and unused components from the manifest." +
-        " Also adds exported intent filter for GameDetailActivity and necessary attributes for WineActivity.",
-) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
-
+private val manifestCleanupResourcePatch = resourcePatch {
     execute {
+        // Remove unused assets.
+        //delete("assets/NotoColorEmojiCompat.ttf")
+        //delete("assets/auth_intro_timberline.webm")
+        //delete("assets/auth_loop_timberline.webm")
+        //delete("assets/better-xcloud.user.js")
+        //delete("assets/splash_video.mp4")
+        delete("assets/libwbsafeedit")
+        delete("assets/libwbsafeedit_arm64-v8a")
+        delete("assets/libwbsafeedit_armeabi")
+        delete("assets/libwbsafeedit_armeabi-v7a")
+        //delete("assets/h5_qr_back.png")
+
         document("AndroidManifest.xml").use { dom ->
             fun removeByName(vararg tags: String, predicate: (String) -> Boolean) {
                 tags.flatMap { tag ->
@@ -162,6 +168,31 @@ val manifestCleanupPatch = resourcePatch(
                         name.contains("SteamService")
                 }
                 .forEach { it.removeAttribute("android:foregroundServiceType") }
+        }
+    }
+}
+
+@Suppress("unused")
+val manifestCleanupPatch = bytecodePatch(
+    name = "Manifest cleanup",
+    description = "Removes unnecessary permissions, payment SDKs, unused components from the manifest, " +
+        "dead SDK class trees from DEX, and unused assets.",
+) {
+    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+
+    dependsOn(manifestCleanupResourcePatch)
+
+    execute {
+        // Remove payment/auth/unused SDK class trees from DEX.
+        // Keep com/tencent/mmkv — MMKV is used by App.onCreate for key-value storage.
+        classes.removeIf { classDef ->
+            val type = classDef.type
+            (type.startsWith("Lcom/tencent/") &&
+                !type.startsWith("Lcom/tencent/mmkv/") &&
+                !type.startsWith("Lcom/tencent/vasdolly/") &&
+                !type.startsWith("Lcom/tencent/tpgbox/")) ||
+                type.startsWith("Lcom/alipay/") ||
+                type.startsWith("Lcom/mobile/auth/")
         }
     }
 }

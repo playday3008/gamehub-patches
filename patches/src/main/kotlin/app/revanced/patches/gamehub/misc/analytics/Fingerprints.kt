@@ -58,28 +58,3 @@ internal val iUmengServiceImplOnEventFingerprint = fingerprint {
             method.parameterTypes[0] == "Ljava/lang/String;"
     }
 }
-
-internal val firebaseInitProviderFingerprint = fingerprint {
-    custom { method, classDef ->
-        classDef.type == "Lcom/google/firebase/provider/FirebaseInitProvider;" &&
-            method.name == "onCreate"
-    }
-}
-
-internal val pushSAOnResumeFingerprint = fingerprint {
-    custom { method, classDef ->
-        classDef.type == "Lcn/jiguang/analytics/page/PushSA;" && method.name == "onResume"
-    }
-}
-
-internal val pushSAOnPauseFingerprint = fingerprint {
-    custom { method, classDef ->
-        classDef.type == "Lcn/jiguang/analytics/page/PushSA;" && method.name == "onPause"
-    }
-}
-
-internal val pushSAOnKillProcessFingerprint = fingerprint {
-    custom { method, classDef ->
-        classDef.type == "Lcn/jiguang/analytics/page/PushSA;" && method.name == "onKillProcess"
-    }
-}
