@@ -10,7 +10,8 @@ public enum GHLog {
     CURRENCY("Currency"),
     COMPAT("Compat"),
     FILE_MGR("FileMgr"),
-    STORAGE("Storage");
+    STORAGE("Storage"),
+    NET("Net");
 
     private static final String PREFIX = "GHL/";
     private final String tag;

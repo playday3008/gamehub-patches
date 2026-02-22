@@ -279,4 +279,68 @@ public class GameHubPrefs {
         }
         return null;
     }
+
+    /**
+     * Logs the full request/response details for a failed API call.
+     * Called from the GsonConverter 4xx path via bytecode injection.
+     * Uses reflection to avoid compile-time dependency on OkHttp types.
+     *
+     * <p>Headers are iterated via {@code headers.size()}, {@code headers.name(i)},
+     * {@code headers.value(i)} to bypass OkHttp's built-in redaction in {@code toString()}.
+     * The request body (for POST requests) is read via {@code okio.Buffer}.
+     *
+     * @param response okhttp3.Response object
+     * @param bodyString the response body already read as a String (may be null)
+     */
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    public static void logFailedApiRequest(Object response, String bodyString) {
+        try {
+            Object request = response.getClass().getMethod("request").invoke(response);
+            Object url = request.getClass().getMethod("url").invoke(request);
+            Object headers = request.getClass().getMethod("headers").invoke(request);
+            String httpMethod = (String) request.getClass().getMethod("method").invoke(request);
+            int code = (int) response.getClass().getMethod("code").invoke(response);
+
+            GHLog.NET.d("=== Failed API Request ===");
+            GHLog.NET.d(httpMethod + " " + url + " → HTTP " + code);
+
+            // Iterate headers via reflection to bypass OkHttp's redaction.
+            try {
+                java.lang.reflect.Method sizeMethod = headers.getClass().getMethod("size");
+                java.lang.reflect.Method nameMethod = headers.getClass().getMethod("name", int.class);
+                java.lang.reflect.Method valueMethod = headers.getClass().getMethod("value", int.class);
+                int headerCount = (int) sizeMethod.invoke(headers);
+                for (int i = 0; i < headerCount; i++) {
+                    String name = (String) nameMethod.invoke(headers, i);
+                    String value = (String) valueMethod.invoke(headers, i);
+                    GHLog.NET.d("  " + name + ": " + value);
+                }
+            } catch (Exception e) {
+                GHLog.NET.d("Request headers (fallback): " + headers);
+            }
+
+            // Log request body for POST/PUT/PATCH requests.
+            try {
+                Object body = request.getClass().getMethod("body").invoke(request);
+                if (body != null) {
+                    Class<?> bufferClass = Class.forName("okio.Buffer");
+                    Object buffer = bufferClass.getDeclaredConstructor().newInstance();
+                    body.getClass().getMethod("writeTo", Class.forName("okio.BufferedSink"))
+                            .invoke(body, buffer);
+                    String reqBody = (String) bufferClass.getMethod("readUtf8").invoke(buffer);
+                    if (reqBody != null && !reqBody.isEmpty()) {
+                        GHLog.NET.d("Request body: " + reqBody);
+                    }
+                }
+            } catch (Exception e) {
+                GHLog.NET.d("Request body: <unreadable>");
+            }
+
+            if (bodyString != null) {
+                GHLog.NET.d("Response body: " + bodyString);
+            }
+        } catch (Exception e) {
+            GHLog.NET.w("logFailedApiRequest failed", e);
+        }
+    }
 }

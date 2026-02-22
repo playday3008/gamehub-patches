@@ -44,6 +44,29 @@ internal val wifiuiHttpConfigFingerprint = fingerprint {
     }
 }
 
+// TokenRefreshInterceptor.j() — performs the official API token refresh via jwt/refresh/token.
+// Hooked to try the external token service first when loginBypassed=true.
+internal val tokenRefreshMethodFingerprint = fingerprint {
+    returns("Ljava/lang/String;")
+    parameters()
+    strings("jwt/refresh/token")
+    custom { method, classDef ->
+        classDef.type == "Lcom/xj/common/http/interceptor/TokenRefreshInterceptor;" &&
+            method.name == "j"
+    }
+}
+
+// TokenRefreshInterceptor.intercept() — main interceptor; on refresh failure it navigates
+// to the login screen via TheRouter.b(). Hooked to skip logout when loginBypassed=true.
+internal val tokenRefreshInterceptFingerprint = fingerprint {
+    returns("Lokhttp3/Response;")
+    parameters("Lokhttp3/Interceptor\$Chain;")
+    custom { method, classDef ->
+        classDef.type == "Lcom/xj/common/http/interceptor/TokenRefreshInterceptor;" &&
+            method.name == "intercept"
+    }
+}
+
 // GsonConverter — return null from catch block instead of throwing ConvertException,
 // so JSON parse failures from the alternative API are treated as missing data, not crashes.
 internal val gsonConverterFingerprint = fingerprint {

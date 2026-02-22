@@ -1,10 +1,12 @@
 package app.revanced.patches.gamehub.network
 
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patches.gamehub.CONTENT_TYPE_API
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
@@ -138,6 +140,18 @@ val apiServerSwitchPatch = bytecodePatch(
             // Replace new-instance with const/4 null on returnReg, preserving :goto_4 label.
             // The now-adjacent return-object v5 acts as our null return.
             replaceInstruction(newInstanceIndex, "const/4 v$returnReg, 0x0")
+
+            // Log full request/response details on the 4xx path (RequestParamsException).
+            // At the new-instance instruction: p2 = Response, v1 = body string (or null).
+            val reqParamsIndex = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.NEW_INSTANCE &&
+                    getReference<TypeReference>()?.type ==
+                    "Lcom/drake/net/exception/RequestParamsException;"
+            }
+            addInstructions(
+                reqParamsIndex,
+                "invoke-static {p2, v1}, $STEAM_EXTENSION->logFailedApiRequest(Ljava/lang/Object;Ljava/lang/String;)V",
+            )
         }
 
         // Patch wifiui HttpConfig.b(Context)
@@ -176,6 +190,72 @@ val apiServerSwitchPatch = bytecodePatch(
                     const/4 v0, 0x1
                     sput-boolean v0, $TOKEN_PROVIDER_CLASS->apiSwitchPatched:Z
                 """,
+            )
+        }
+
+        // Hook TokenRefreshInterceptor.j() — try the external token service before falling
+        // through to the official jwt/refresh/token endpoint.
+        // j() has .locals 7, so v0 is safe to use before the original code sets it.
+        tokenRefreshMethodFingerprint.method.apply {
+            addInstructionsWithLabels(
+                0,
+                """
+                    invoke-static {}, $TOKEN_PROVIDER_CLASS->refreshTokenForOfficialApi()Ljava/lang/String;
+                    move-result-object v0
+                    if-eqz v0, :original
+                    return-object v0
+                """,
+                ExternalLabel("original", getInstruction(0)),
+            )
+        }
+
+        // Prevent logout navigation when login is bypassed.
+        // In intercept(), when j() returns null the interceptor calls TheRouter.b() to get
+        // the nav service, then calls .n() on it to navigate to the login screen.
+        // We skip that entire block when loginBypassed=true.
+        // Target: const-class p1, ILandscapeLauncherNavService → TheRouter.b() → .n()
+        // We inject before the const-class instruction.
+        tokenRefreshInterceptFingerprint.method.apply {
+            val theRouterCallIndex = indexOfFirstInstructionOrThrow {
+                opcode == Opcode.INVOKE_STATIC &&
+                    (this as? ReferenceInstruction)?.reference?.let {
+                        it is MethodReference && it.name == "b" &&
+                            it.definingClass == "Lcom/therouter/TheRouter;"
+                    } == true
+            }
+            // The const-class is one instruction before TheRouter.b()
+            val constClassIndex = theRouterCallIndex - 1
+
+            // Find the next instruction after the if-eqz/invoke-interface .n() block.
+            // From the smali: after .n() is :cond_5, then invoke-virtual b() (build error response).
+            // We want to jump to the invoke-virtual {p0, v0} b() call that builds the
+            // synthetic 401 response — which is at the instruction after the .n() call's :cond_5 label.
+            val navCallIndex = indexOfFirstInstructionOrThrow(theRouterCallIndex) {
+                opcode == Opcode.INVOKE_INTERFACE &&
+                    (this as? ReferenceInstruction)?.reference?.let {
+                        it is MethodReference && it.name == "n" &&
+                            it.definingClass == "Lcom/xj/common/service/ILandscapeLauncherNavService;"
+                    } == true
+            }
+            // The build-error-response call is after the nav .n() call + :cond_5 label.
+            // From the smali: :cond_5 is the instruction right after if-eqz that skips .n(),
+            // and after .n() falls through to :cond_5 too. :cond_5 is the invoke-virtual b().
+            val buildErrorResponseIndex = indexOfFirstInstructionOrThrow(navCallIndex) {
+                opcode == Opcode.INVOKE_VIRTUAL &&
+                    (this as? ReferenceInstruction)?.reference?.let {
+                        it is MethodReference && it.name == "b" &&
+                            it.definingClass == "Lcom/xj/common/http/interceptor/TokenRefreshInterceptor;" &&
+                            it.returnType == "Lokhttp3/Response;"
+                    } == true
+            }
+
+            addInstructionsWithLabels(
+                constClassIndex,
+                """
+                    sget-boolean v3, $TOKEN_PROVIDER_CLASS->loginBypassed:Z
+                    if-nez v3, :skip_logout
+                """,
+                ExternalLabel("skip_logout", getInstruction(buildErrorResponseIndex)),
             )
         }
     }
