@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
+import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsContract.Root;
 import android.provider.DocumentsProvider;
@@ -22,6 +23,7 @@ import app.revanced.extension.gamehub.util.GHLog;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -83,6 +85,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
             COLUMN_MT_EXTRAS,
     };
 
+    private String authority;
     private String packageName;
     private File dataDir;
     private File userDeDataDir;
@@ -97,6 +100,27 @@ public class MTDataFilesProvider extends DocumentsProvider {
     @Override
     public void attachInfo(Context context, ProviderInfo info) {
         super.attachInfo(context, info);
+
+        // DocumentsProvider mandates MANAGE_DOCUMENTS in the manifest, but that
+        // signature-level permission blocks direct access from file managers like
+        // MT Manager. Clear ContentProvider's internal permission fields so any
+        // app can query this provider without going through the system picker.
+        try {
+            Field readPerm = android.content.ContentProvider.class
+                    .getDeclaredField("mReadPermission");
+            readPerm.setAccessible(true);
+            readPerm.set(this, null);
+
+            Field writePerm = android.content.ContentProvider.class
+                    .getDeclaredField("mWritePermission");
+            writePerm.setAccessible(true);
+            writePerm.set(this, null);
+        } catch (ReflectiveOperationException e) {
+            GHLog.FILE_MGR.w("Could not clear MANAGE_DOCUMENTS enforcement; "
+                    + "direct access from file managers may require SAF", e);
+        }
+
+        authority = info.authority;
         packageName = context.getPackageName();
         dataDir = context.getFilesDir().getParentFile();
         String dataDirPath = dataDir.getPath();
@@ -202,6 +226,8 @@ public class MTDataFilesProvider extends DocumentsProvider {
         }
         final MatrixCursor result = new MatrixCursor(
                 projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        result.setNotificationUri(getContext().getContentResolver(),
+                DocumentsContract.buildChildDocumentsUri(authority, parentDocumentId));
         final File parent = getFileForDocId(parentDocumentId);
         if (parent == null) {
             includeFile(result, parentDocumentId + "/" + DIR_DATA, dataDir);
@@ -254,6 +280,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
                     succeeded = newFile.createNewFile();
                 }
                 if (succeeded) {
+                    notifyChildDocumentsChanged(parentDocumentId);
                     return parentDocumentId.endsWith("/")
                             ? parentDocumentId + newFile.getName()
                             : parentDocumentId + "/" + newFile.getName();
@@ -272,6 +299,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
         if (file == null || !deleteFile(file)) {
             throw new FileNotFoundException("Failed to delete document " + documentId);
         }
+        notifyChildDocumentsChanged(getParentDocId(documentId));
     }
 
     @Override
@@ -288,7 +316,9 @@ public class MTDataFilesProvider extends DocumentsProvider {
             File target = new File(file.getParentFile(), displayName);
             if (file.renameTo(target)) {
                 int i = documentId.lastIndexOf('/', documentId.length() - 2);
-                return documentId.substring(0, i) + "/" + displayName;
+                String parentDocId = documentId.substring(0, i);
+                notifyChildDocumentsChanged(parentDocId);
+                return parentDocId + "/" + displayName;
             }
         }
         throw new FileNotFoundException(
@@ -303,6 +333,8 @@ public class MTDataFilesProvider extends DocumentsProvider {
         if (sourceFile != null && targetDir != null) {
             File targetFile = new File(targetDir, sourceFile.getName());
             if (!targetFile.exists() && sourceFile.renameTo(targetFile)) {
+                notifyChildDocumentsChanged(sourceParentDocumentId);
+                notifyChildDocumentsChanged(targetParentDocumentId);
                 return targetParentDocumentId.endsWith("/")
                         ? targetParentDocumentId + targetFile.getName()
                         : targetParentDocumentId + "/" + targetFile.getName();
@@ -391,6 +423,16 @@ public class MTDataFilesProvider extends DocumentsProvider {
             out.putString(MESSAGE_KEY, e.toString());
         }
         return out;
+    }
+
+    private void notifyChildDocumentsChanged(String parentDocId) {
+        Uri uri = DocumentsContract.buildChildDocumentsUri(authority, parentDocId);
+        getContext().getContentResolver().notifyChange(uri, null);
+    }
+
+    private String getParentDocId(String docId) {
+        int slash = docId.lastIndexOf('/');
+        return slash > 0 ? docId.substring(0, slash) : docId;
     }
 
     private void includeFile(MatrixCursor result, String docId, File file)
