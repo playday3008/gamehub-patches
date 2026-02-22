@@ -8,6 +8,9 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.misc.errorhandling.errorHandlingPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.settings.CONTENT_TYPE_API
+import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
+import app.revanced.patches.gamehub.misc.token.tokenProviderClinitFingerprint
+import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
 import app.revanced.util.getReference
@@ -29,7 +32,7 @@ val apiServerSwitchPatch = bytecodePatch(
 ) {
     compatibleWith("com.xiaoji.egggame"("5.3.5"))
 
-    dependsOn(sharedGamehubExtensionPatch, errorHandlingPatch, settingsMenuPatch)
+    dependsOn(sharedGamehubExtensionPatch, errorHandlingPatch, settingsMenuPatch, tokenResolutionPatch)
 
     execute {
         addSteamSetting(CONTENT_TYPE_API, "CONTENT_TYPE_API")
@@ -155,6 +158,20 @@ val apiServerSwitchPatch = bytecodePatch(
                 """
                     invoke-static {v$urlRegister}, $STEAM_EXTENSION->getEffectiveApiUrl(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v$urlRegister
+                """,
+            )
+        }
+
+        // Set TokenProvider.apiSwitchPatched = true so the token resolution extension
+        // knows that the API switch patch is active (guards against the SharedPreferences
+        // default of true when the patch isn't applied).
+        tokenProviderClinitFingerprint.method.apply {
+            val returnVoidIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.RETURN_VOID }
+            addInstructions(
+                returnVoidIndex,
+                """
+                    const/4 v0, 0x1
+                    sput-boolean v0, $TOKEN_PROVIDER_CLASS->apiSwitchPatched:Z
                 """,
             )
         }

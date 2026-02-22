@@ -1,9 +1,13 @@
 package app.revanced.patches.gamehub.misc.login
 
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.stringOption
+import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
+import app.revanced.patches.gamehub.misc.token.tokenProviderClinitFingerprint
+import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
 import app.revanced.patches.gamehub.misc.tokenexpiry.bypassTokenExpiryPatch
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
@@ -21,7 +25,7 @@ val bypassLoginPatch = bytecodePatch(
 ) {
     compatibleWith("com.xiaoji.egggame"("5.3.5"))
 
-    dependsOn(bypassTokenExpiryPatch)
+    dependsOn(bypassTokenExpiryPatch, tokenResolutionPatch)
 
     val username by stringOption(
         key = "username",
@@ -59,7 +63,6 @@ val bypassLoginPatch = bytecodePatch(
         getAvatarFingerprint.method.returnEarly(emoji)
         getNicknameFingerprint.method.returnEarly(nickname!!)
         getUsernameFingerprint.method.returnEarly(username!!)
-        getTokenFingerprint.method.returnEarly("fake-token")
         getUidFingerprint.method.returnEarly(99999)
         isLoginFingerprint.method.returnEarly(true)
 
@@ -104,6 +107,19 @@ val bypassLoginPatch = bytecodePatch(
             for (i in startActivityIndex downTo newInstanceIndex) {
                 removeInstruction(i)
             }
+        }
+
+        // Set TokenProvider.loginBypassed = true so the token resolution extension
+        // knows to fetch from the token-refresh service instead of using the original token.
+        tokenProviderClinitFingerprint.method.apply {
+            val returnVoidIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.RETURN_VOID }
+            addInstructions(
+                returnVoidIndex,
+                """
+                    const/4 v0, 0x1
+                    sput-boolean v0, $TOKEN_PROVIDER_CLASS->loginBypassed:Z
+                """,
+            )
         }
     }
 }

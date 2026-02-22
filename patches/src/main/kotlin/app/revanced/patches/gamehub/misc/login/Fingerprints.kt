@@ -18,12 +18,6 @@ internal val getNicknameFingerprint = fingerprint {
     }
 }
 
-internal val getTokenFingerprint = fingerprint {
-    custom { method, classDef ->
-        classDef.type == USER_MANAGER_CLASS && method.name == "getToken"
-    }
-}
-
 internal val getUidFingerprint = fingerprint {
     custom { method, classDef ->
         classDef.type == USER_MANAGER_CLASS && method.name == "getUid"
