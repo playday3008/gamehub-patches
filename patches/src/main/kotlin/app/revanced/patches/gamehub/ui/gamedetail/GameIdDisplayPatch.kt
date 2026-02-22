@@ -4,12 +4,14 @@ import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.EXTENSION_GAME_ID_HELPER
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.asSequence
 import org.w3c.dom.Element
 
-private const val EXTENSION_CLASS =
-    "Lapp/revanced/extension/gamehub/ui/GameIdHelper;"
+private const val EXTENSION_CLASS = EXTENSION_GAME_ID_HELPER
 
 private val gameIdLayoutPatch = resourcePatch {
     execute {
@@ -103,7 +105,7 @@ val gameIdDisplayPatch = bytecodePatch(
     name = "Game ID display",
     description = "Displays a copyable game ID in the game detail screen.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch, gameIdLayoutPatch)
 
     execute {

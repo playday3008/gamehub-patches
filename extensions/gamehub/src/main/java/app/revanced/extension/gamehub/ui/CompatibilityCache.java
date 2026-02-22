@@ -1,5 +1,7 @@
 package app.revanced.extension.gamehub.ui;
 
+import app.revanced.extension.gamehub.util.GHLog;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -68,6 +70,7 @@ public final class CompatibilityCache {
                     new ArrayList<>()
             );
         } catch (Exception e) {
+            GHLog.COMPAT.w("getOrBuildCompat failed", e);
             return null;
         }
     }

@@ -3,6 +3,8 @@ package app.revanced.patches.gamehub.misc.push
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.stability.appNullSafetyPatch
 import app.revanced.util.asSequence
 import app.revanced.util.returnEarly
@@ -49,7 +51,7 @@ val disablePushPatch = bytecodePatch(
     name = "Disable push notifications",
     description = "Disables JPush notification service initialization and defaults notification settings to off.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     dependsOn(appNullSafetyPatch, disablePushManifestPatch)
 

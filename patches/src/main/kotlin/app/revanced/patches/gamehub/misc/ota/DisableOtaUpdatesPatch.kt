@@ -3,6 +3,8 @@ package app.revanced.patches.gamehub.misc.ota
 import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
@@ -26,7 +28,7 @@ val disableOtaUpdatesPatch = bytecodePatch(
     name = "Disable OTA updates",
     description = "Blocks OTA update server URL.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     dependsOn(otaCleanupResourcePatch)
 

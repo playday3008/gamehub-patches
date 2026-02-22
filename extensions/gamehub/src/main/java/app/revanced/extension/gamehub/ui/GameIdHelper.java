@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import app.revanced.extension.gamehub.util.GHLog;
+
 /**
  * Displays copyable game IDs in the game detail screen.
  * Each ID is a separate TextView that copies its value on tap.
@@ -45,7 +47,7 @@ public class GameIdHelper {
                         "Local Game ID: " + localGameId, localGameId, "Local Game ID");
             }
         } catch (Exception e) {
-            // Silently ignore if layout elements are missing
+            GHLog.GAME_ID.w("populateGameId failed", e);
         }
     }
 

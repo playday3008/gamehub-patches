@@ -1,8 +1,8 @@
 package app.revanced.extension.gamehub.token;
 
 import android.content.SharedPreferences;
-import android.util.Log;
 
+import app.revanced.extension.gamehub.util.GHLog;
 import com.blankj.utilcode.util.Utils;
 
 import java.io.BufferedReader;
@@ -64,29 +64,29 @@ public class TokenProvider {
      * @param originalToken the token that the original method would have returned
      * @return the effective token based on the active patch combination
      */
-    private static final String TAG = "TokenProvider";
+    private static final GHLog L = GHLog.TOKEN;
 
     public static String resolveToken(String originalToken) {
-        Log.d(TAG, "resolveToken: apiSwitchPatched=" + apiSwitchPatched
+        L.d("resolveToken: apiSwitchPatched=" + apiSwitchPatched
                 + " loginBypassed=" + loginBypassed
                 + " isExternalAPI=" + isExternalAPI()
                 + " originalToken=" + (originalToken == null ? "null" : originalToken.length() + " chars"));
 
         // EmuReady API accepts any token — use a lightweight fake.
         if (apiSwitchPatched && isExternalAPI()) {
-            Log.d(TAG, "resolveToken → fake-token (EmuReady path)");
+            L.d("resolveToken → fake-token (EmuReady path)");
             return "fake-token";
         }
 
         // Login is bypassed but we're talking to the Original API — need a real token.
         if (loginBypassed) {
             String token = getServiceToken(originalToken);
-            Log.d(TAG, "resolveToken → service token: " + (token == null ? "null" : token.length() + " chars"));
+            L.d("resolveToken → service token: " + (token == null ? "null" : token.length() + " chars"));
             return token;
         }
 
         // No login bypass — the user is genuinely logged in; pass through.
-        Log.d(TAG, "resolveToken → original pass-through");
+        L.d("resolveToken → original pass-through");
         return originalToken;
     }
 
@@ -117,10 +117,10 @@ public class TokenProvider {
         // L1: in-memory AtomicReference cache.
         CachedToken l1 = l1Cache.get();
         if (l1 != null && l1.isValid()) {
-            Log.d(TAG, "getServiceToken → L1 hit");
+            L.d("getServiceToken → L1 hit");
             return l1.token;
         }
-        Log.d(TAG, "getServiceToken: L1 miss");
+        L.d("getServiceToken: L1 miss");
 
         // L2: SharedPreferences persistent cache (survives app restarts).
         try {
@@ -128,21 +128,21 @@ public class TokenProvider {
             String cachedToken = prefs.getString(KEY_CACHED_TOKEN, null);
             long expiry = prefs.getLong(KEY_CACHED_TOKEN_EXPIRY, 0);
             long remaining = expiry - System.currentTimeMillis();
-            Log.d(TAG, "getServiceToken: L2 cached=" + (cachedToken != null) + " remaining=" + remaining + "ms");
+            L.d("getServiceToken: L2 cached=" + (cachedToken != null) + " remaining=" + remaining + "ms");
             if (cachedToken != null && !cachedToken.isEmpty() && remaining > 0) {
                 l1Cache.set(new CachedToken(cachedToken, expiry));
-                Log.d(TAG, "getServiceToken → L2 hit");
+                L.d("getServiceToken → L2 hit");
                 return cachedToken;
             }
         } catch (Exception e) {
-            Log.w(TAG, "getServiceToken: L2 error", e);
+            L.w("getServiceToken: L2 error", e);
         }
 
         // L3: HTTP fetch from token-refresh service.
         try {
-            Log.d(TAG, "getServiceToken: L3 fetching from " + TOKEN_SERVICE_URL);
+            L.d("getServiceToken: L3 fetching from " + TOKEN_SERVICE_URL);
             String freshToken = fetchTokenFromService();
-            Log.d(TAG, "getServiceToken: L3 result=" + (freshToken == null ? "null" : freshToken.length() + " chars"));
+            L.d("getServiceToken: L3 result=" + (freshToken == null ? "null" : freshToken.length() + " chars"));
             if (freshToken != null && !freshToken.isEmpty()) {
                 long expiry = System.currentTimeMillis() + CACHE_TTL_MS;
                 l1Cache.set(new CachedToken(freshToken, expiry));
@@ -153,32 +153,32 @@ public class TokenProvider {
                             .apply();
                 } catch (Exception ignored) {
                 }
-                Log.d(TAG, "getServiceToken → L3 hit");
+                L.d("getServiceToken → L3 hit");
                 return freshToken;
             }
         } catch (Exception e) {
-            Log.w(TAG, "getServiceToken: L3 fetch failed", e);
+            L.w("getServiceToken: L3 fetch failed", e);
         }
 
         // Fallback chain: stale L1 → stale L2 → original token → fake-token.
         CachedToken stale = l1Cache.get();
         if (stale != null && stale.token != null && !stale.token.isEmpty()) {
-            Log.d(TAG, "getServiceToken → stale L1");
+            L.d("getServiceToken → stale L1");
             return stale.token;
         }
         try {
             String stalePref = getTokenPrefs().getString(KEY_CACHED_TOKEN, null);
             if (stalePref != null && !stalePref.isEmpty()) {
-                Log.d(TAG, "getServiceToken → stale L2");
+                L.d("getServiceToken → stale L2");
                 return stalePref;
             }
         } catch (Exception ignored) {
         }
         if (fallbackToken != null && !fallbackToken.isEmpty()) {
-            Log.d(TAG, "getServiceToken → fallbackToken");
+            L.d("getServiceToken → fallbackToken");
             return fallbackToken;
         }
-        Log.w(TAG, "getServiceToken → last-resort fake-token");
+        L.w("getServiceToken → last-resort fake-token");
         return "fake-token";
     }
 
@@ -198,7 +198,7 @@ public class TokenProvider {
             conn.setReadTimeout(10_000);
 
             int code = conn.getResponseCode();
-            Log.d(TAG, "fetchTokenFromService: HTTP " + code);
+            L.d("fetchTokenFromService: HTTP " + code);
             if (code != 200) return null;
 
             BufferedReader reader = new BufferedReader(
@@ -211,7 +211,7 @@ public class TokenProvider {
             reader.close();
 
             String body = sb.toString();
-            Log.d(TAG, "fetchTokenFromService: body=" + body.substring(0, Math.min(body.length(), 200)));
+            L.d("fetchTokenFromService: body=" + body.substring(0, Math.min(body.length(), 200)));
             return parseTokenFromJson(body);
         } finally {
             if (conn != null) conn.disconnect();

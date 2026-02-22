@@ -3,6 +3,8 @@ package app.revanced.patches.gamehub.misc.debugstrings
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -489,7 +491,7 @@ val translateDebugStringsPatch = bytecodePatch(
     name = "Translate debug strings",
     description = "Translates Chinese strings in debug-related screens and log messages to English.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(debugStringsLayoutPatch)
 
     execute {

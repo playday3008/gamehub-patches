@@ -3,14 +3,16 @@ package app.revanced.patches.gamehub.ui.statusbar
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.EXTENSION_BATTERY_HELPER
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.asSequence
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import org.w3c.dom.Element
 
-private const val EXTENSION_CLASS =
-    "Lapp/revanced/extension/gamehub/ui/BatteryHelper;"
+private const val EXTENSION_CLASS = EXTENSION_BATTERY_HELPER
 
 private val batteryLayoutPatch = resourcePatch {
     execute {
@@ -87,7 +89,7 @@ val batteryDisplayPatch = bytecodePatch(
     name = "Battery percentage display",
     description = "Adds a battery percentage text next to the battery icon.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch, batteryLayoutPatch)
 
     execute {

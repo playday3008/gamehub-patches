@@ -2,6 +2,8 @@ package app.revanced.patches.gamehub.misc.cleanup
 
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.util.asSequence
 import app.revanced.util.getNode
 import org.w3c.dom.Element
@@ -178,7 +180,7 @@ val manifestCleanupPatch = bytecodePatch(
     description = "Removes unnecessary permissions, payment SDKs, unused components from the manifest, " +
         "dead SDK class trees from DEX, and unused assets.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     dependsOn(manifestCleanupResourcePatch)
 

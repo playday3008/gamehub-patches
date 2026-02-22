@@ -1,8 +1,9 @@
 package app.revanced.patches.gamehub.misc.token
 
 import app.revanced.patcher.fingerprint
+import app.revanced.patches.gamehub.EXTENSION_TOKEN_PROVIDER
 
-internal const val TOKEN_PROVIDER_CLASS = "Lapp/revanced/extension/gamehub/token/TokenProvider;"
+internal const val TOKEN_PROVIDER_CLASS = EXTENSION_TOKEN_PROVIDER
 
 internal val getTokenFingerprint = fingerprint {
     custom { method, classDef ->

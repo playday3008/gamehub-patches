@@ -3,6 +3,8 @@ package app.revanced.patches.gamehub.misc.logserver
 import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -14,7 +16,7 @@ val logServerClearButtonPatch = bytecodePatch(
     name = "Log server clear button",
     description = "Adds a Clear Logs button to the WinEmu log HTTP server page.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     execute {
         logHttpServerPageFingerprint.method.apply {

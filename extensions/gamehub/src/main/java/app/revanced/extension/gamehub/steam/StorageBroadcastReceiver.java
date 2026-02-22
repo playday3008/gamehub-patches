@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import app.revanced.extension.gamehub.prefs.GameHubPrefs;
+import app.revanced.extension.gamehub.util.GHLog;
 
 /**
  * Receives broadcast commands from external apps (e.g. EmuReady) to control the Steam
@@ -24,6 +25,7 @@ public class StorageBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context ctx, Intent intent) {
         if (intent == null || ctx == null) return;
+        GHLog.STORAGE.d("onReceive: " + intent.getAction());
         String pkg = ctx.getPackageName();
         String action = intent.getAction();
         if ((pkg + ".SET_STEAM_STORAGE").equals(action)) {

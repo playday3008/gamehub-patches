@@ -17,6 +17,8 @@ import android.system.Os;
 import android.system.StructStat;
 import android.webkit.MimeTypeMap;
 
+import app.revanced.extension.gamehub.util.GHLog;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -257,7 +259,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
                             : parentDocumentId + "/" + newFile.getName();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                GHLog.FILE_MGR.w("createDocument failed for " + displayName, e);
             }
         }
         throw new FileNotFoundException(
@@ -458,7 +460,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
                 }
                 row.add(COLUMN_MT_EXTRAS, sb.toString());
             } catch (Exception e) {
-                e.printStackTrace();
+                GHLog.FILE_MGR.w("includeFile extras failed for " + path, e);
             }
         }
     }
@@ -496,7 +498,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
             StructStat stat = Os.lstat(file.getPath());
             return (stat.st_mode & S_IFMT) == S_IFLNK;
         } catch (ErrnoException e) {
-            e.printStackTrace();
+            GHLog.FILE_MGR.w("isSymbolicLink failed", e);
             return false;
         }
     }

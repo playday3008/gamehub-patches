@@ -2,20 +2,22 @@ package app.revanced.patches.gamehub.ui.accountvalue
 
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.EXTENSION_CURRENCY_HELPER
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
-private const val EXTENSION_CLASS =
-    "Lapp/revanced/extension/gamehub/ui/AccountCurrencyHelper;"
+private const val EXTENSION_CLASS = EXTENSION_CURRENCY_HELPER
 
 @Suppress("unused")
 val accountCurrencyPatch = bytecodePatch(
     name = "Account currency display",
     description = "Shows the real currency code instead of hardcoded ¥/￥ in the Steam account value and game price labels.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch)
 
     execute {

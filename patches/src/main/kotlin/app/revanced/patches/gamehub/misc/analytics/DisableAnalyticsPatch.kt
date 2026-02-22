@@ -2,6 +2,8 @@ package app.revanced.patches.gamehub.misc.analytics
 
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.stability.appNullSafetyPatch
 import app.revanced.util.asSequence
 import app.revanced.util.returnEarly
@@ -88,7 +90,7 @@ val disableAnalyticsPatch = bytecodePatch(
     description = "Disables Umeng, Firebase, and Jiguang analytics, removes tracking components " +
         "from the manifest, strips ad-tracking permissions, and deletes analytics/crash native libraries.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     dependsOn(analyticsCleanupResourcePatch, appNullSafetyPatch)
 

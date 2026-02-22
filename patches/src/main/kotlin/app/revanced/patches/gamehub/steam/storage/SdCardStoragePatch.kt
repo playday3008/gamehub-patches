@@ -3,8 +3,11 @@ package app.revanced.patches.gamehub.steam.storage
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.CONTENT_TYPE_SD_CARD_STORAGE
+import app.revanced.patches.gamehub.EXTENSION_PREFS
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
-import app.revanced.patches.gamehub.misc.settings.CONTENT_TYPE_SD_CARD_STORAGE
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
@@ -13,14 +16,14 @@ import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
-private const val STEAM_EXTENSION = "Lapp/revanced/extension/gamehub/prefs/GameHubPrefs;"
+private const val STEAM_EXTENSION = EXTENSION_PREFS
 
 @Suppress("unused")
 val sdCardStoragePatch = bytecodePatch(
     name = "SD card Steam storage",
     description = "Allows redirecting Steam game storage to a custom location such as an SD card.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch)
 

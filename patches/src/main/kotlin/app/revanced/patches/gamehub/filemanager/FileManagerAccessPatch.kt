@@ -1,6 +1,8 @@
 package app.revanced.patches.gamehub.filemanager
 
 import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.asSequence
 import app.revanced.util.getNode
@@ -16,7 +18,7 @@ val fileManagerAccessPatch = resourcePatch(
     description = "Adds a DocumentsProvider so that MT File Manager and other Storage Access " +
         "Framework clients can browse the app's internal storage directories.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch)
 
     execute {

@@ -3,6 +3,7 @@ package app.revanced.extension.gamehub.prefs;
 import android.content.SharedPreferences;
 import android.os.Environment;
 
+import app.revanced.extension.gamehub.util.GHLog;
 import com.blankj.utilcode.util.Utils;
 
 @SuppressWarnings("unused")
@@ -170,7 +171,7 @@ public class GameHubPrefs {
             addHeader.invoke(builder, "Accept-Language", "en-US,en;q=0.9");
             addHeader.invoke(builder, "Connection", "keep-alive");
         } catch (Exception e) {
-            // Headers are best-effort; ignore failures
+            GHLog.PREFS.w("addCompatibilityHeaders failed", e);
         }
         return builder;
     }
@@ -227,7 +228,7 @@ public class GameHubPrefs {
                 }
             }
         } catch (Exception e) {
-            // Ignore
+            GHLog.PREFS.w("autoDetectSDCardStorage failed", e);
         }
         return null;
     }

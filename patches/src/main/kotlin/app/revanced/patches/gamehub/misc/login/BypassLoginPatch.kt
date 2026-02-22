@@ -5,6 +5,8 @@ import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.stringOption
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
 import app.revanced.patches.gamehub.misc.token.tokenProviderClinitFingerprint
 import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
@@ -23,7 +25,7 @@ val bypassLoginPatch = bytecodePatch(
     name = "Bypass login",
     description = "Bypasses the login requirement by spoofing user credentials.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     dependsOn(bypassTokenExpiryPatch, tokenResolutionPatch)
 

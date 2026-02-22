@@ -8,6 +8,7 @@ import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
 import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
+import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import app.revanced.util.indexOfFirstInstructionReversedOrThrow
@@ -21,11 +22,7 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableIntEncodedValue
 
 private const val ENTITY_CLASS = "Lcom/xj/landscape/launcher/data/model/entity/SettingItemEntity;"
-private const val EXTENSION = "Lapp/revanced/extension/gamehub/prefs/GameHubPrefs;"
-
-// Content-type constants — must match GameHubPrefs.CONTENT_TYPE_* values.
-internal const val CONTENT_TYPE_SD_CARD_STORAGE = 0x18
-internal const val CONTENT_TYPE_API = 0x1a
+private const val EXTENSION = EXTENSION_PREFS
 
 private lateinit var entityMutableClass: MutableClass
 

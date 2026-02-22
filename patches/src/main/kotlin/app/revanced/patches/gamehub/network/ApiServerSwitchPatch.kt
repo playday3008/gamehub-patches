@@ -5,9 +5,12 @@ import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.CONTENT_TYPE_API
+import app.revanced.patches.gamehub.EXTENSION_PREFS
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.errorhandling.errorHandlingPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
-import app.revanced.patches.gamehub.misc.settings.CONTENT_TYPE_API
 import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
 import app.revanced.patches.gamehub.misc.token.tokenProviderClinitFingerprint
 import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
@@ -23,14 +26,14 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
-private const val STEAM_EXTENSION = "Lapp/revanced/extension/gamehub/prefs/GameHubPrefs;"
+private const val STEAM_EXTENSION = EXTENSION_PREFS
 
 @Suppress("unused")
 val apiServerSwitchPatch = bytecodePatch(
     name = "API server switch",
     description = "Allows switching between the official GameHub API and the EmuReady API server.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     dependsOn(sharedGamehubExtensionPatch, errorHandlingPatch, settingsMenuPatch, tokenResolutionPatch)
 

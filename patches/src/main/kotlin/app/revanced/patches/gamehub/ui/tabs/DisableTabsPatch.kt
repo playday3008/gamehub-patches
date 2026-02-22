@@ -2,6 +2,8 @@ package app.revanced.patches.gamehub.ui.tabs
 
 import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -13,7 +15,7 @@ val disableTabsPatch = bytecodePatch(
     name = "Disable Discover and Find games tabs",
     description = "Hides the Discover and Find games tabs from the main launcher.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     execute {
         initViewFingerprint.method.apply {

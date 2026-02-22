@@ -2,13 +2,15 @@ package app.revanced.patches.gamehub.ui.search
 
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
 
 @Suppress("unused")
 val hideHotSearchesPatch = bytecodePatch(
     name = "Hide hot searches",
     description = "Removes the hot searches section from the search view.",
 ) {
-    compatibleWith("com.xiaoji.egggame"("5.3.5"))
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     execute {
         getHotTrendingKeywordsFingerprint.method.addInstructions(
