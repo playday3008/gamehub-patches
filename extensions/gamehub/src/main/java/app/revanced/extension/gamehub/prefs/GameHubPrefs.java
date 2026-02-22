@@ -3,6 +3,7 @@ package app.revanced.extension.gamehub.prefs;
 import android.content.SharedPreferences;
 import android.os.Environment;
 
+import app.revanced.extension.gamehub.token.TokenProvider;
 import app.revanced.extension.gamehub.util.GHLog;
 import com.blankj.utilcode.util.Utils;
 
@@ -17,6 +18,9 @@ public class GameHubPrefs {
     private static final String KEY_EXTERNAL_API = "use_external_api";
     private static final String KEY_CUSTOM_STORAGE = "use_custom_storage";
     private static final String KEY_STORAGE_PATH = "steam_storage_path";
+    private static final String KEY_LAST_API_SOURCE = "last_api_source";
+
+    private static volatile boolean startupCheckDone = false;
 
     private static SharedPreferences getPrefs() {
         return Utils.a().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
@@ -29,6 +33,28 @@ public class GameHubPrefs {
     public static void toggleAPI() {
         SharedPreferences prefs = getPrefs();
         prefs.edit().putBoolean(KEY_EXTERNAL_API, !prefs.getBoolean(KEY_EXTERNAL_API, true)).apply();
+    }
+
+    /**
+     * Clears cached component data and tokens so the app re-downloads from the new API source.
+     * Must be called whenever the API source changes (toggle or startup mismatch detection).
+     */
+    private static void clearComponentAndTokenCaches() {
+        try {
+            android.content.Context ctx = Utils.a();
+            int mode = android.content.Context.MODE_PRIVATE;
+            // Clear component catalogs (populated per-API, version codes may collide across sources).
+            ctx.getSharedPreferences("sp_winemu_all_components12", mode).edit().clear().apply();
+            ctx.getSharedPreferences("sp_winemu_all_containers", mode).edit().clear().apply();
+            ctx.getSharedPreferences("sp_winemu_all_imageFs", mode).edit().clear().apply();
+            // Clear global component metadata (dxvk, vkd3d, imagefs, steam_client, general_component).
+            ctx.getSharedPreferences("pc_g_setting", mode).edit().clear().apply();
+            // Flush token caches (in-memory L1 + SharedPreferences L2).
+            TokenProvider.clearCache();
+            GHLog.PREFS.d("Clearing component and token caches for API source change");
+        } catch (Exception e) {
+            GHLog.PREFS.w("clearComponentAndTokenCaches failed", e);
+        }
     }
 
     public static boolean isCustomStorageEnabled() {
@@ -100,8 +126,27 @@ public class GameHubPrefs {
 
     /**
      * Returns the effective API URL: EmuReady when not using the official API, original otherwise.
+     * On first call each app launch, checks whether the API source changed since last run
+     * and clears stale component/token caches if so.
      */
     public static String getEffectiveApiUrl(String officialUrl) {
+        if (!startupCheckDone) {
+            startupCheckDone = true;
+            try {
+                SharedPreferences prefs = getPrefs();
+                boolean currentSource = isExternalAPI();
+                // KEY_LAST_API_SOURCE defaults to true (EmuReady) if absent, matching isExternalAPI() default.
+                boolean lastSource = prefs.getBoolean(KEY_LAST_API_SOURCE, true);
+                if (!prefs.contains(KEY_LAST_API_SOURCE) || currentSource != lastSource) {
+                    GHLog.PREFS.d("API source mismatch on startup (current=" + currentSource
+                            + ", last=" + lastSource + ") — clearing caches");
+                    clearComponentAndTokenCaches();
+                    prefs.edit().putBoolean(KEY_LAST_API_SOURCE, currentSource).apply();
+                }
+            } catch (Exception e) {
+                GHLog.PREFS.w("Startup API source check failed", e);
+            }
+        }
         return isExternalAPI() ? EMUREADY_URL : officialUrl;
     }
 
@@ -144,9 +189,11 @@ public class GameHubPrefs {
             }
         } else if (contentType == CONTENT_TYPE_API) {
             toggleAPI();
+            clearComponentAndTokenCaches();
+            getPrefs().edit().putBoolean(KEY_LAST_API_SOURCE, proposedState).apply();
             String msg = proposedState
-                    ? "Switched to EmuReady API (restart app)"
-                    : "Switched to Official API (less private, restart app)";
+                    ? "Switched to EmuReady API — restart to refresh components"
+                    : "Switched to Official API — restart to refresh components";
             android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
             return proposedState;
         }

@@ -59,6 +59,20 @@ public class TokenProvider {
     }
 
     /**
+     * Clears all token caches (L1 in-memory + L2 SharedPreferences).
+     * Called when the API source changes to force fresh token resolution.
+     */
+    public static void clearCache() {
+        l1Cache.set(null);
+        try {
+            getTokenPrefs().edit().clear().apply();
+        } catch (Exception e) {
+            GHLog.TOKEN.w("clearCache: failed to clear token prefs", e);
+        }
+        GHLog.TOKEN.d("clearCache: token caches cleared");
+    }
+
+    /**
      * Called from the patched {@code UserManager.getToken()} return path.
      *
      * @param originalToken the token that the original method would have returned
