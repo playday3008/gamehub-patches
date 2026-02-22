@@ -12,11 +12,6 @@ public class GameHubPrefs {
     public static final int CONTENT_TYPE_SD_CARD_STORAGE = 0x18;
     public static final int CONTENT_TYPE_API = 0x1a;
 
-    // Feature-block content types (used by shouldBlockFeature).
-    private static final int CONTENT_TYPE_DISCOVER = 0x57a;
-    private static final int CONTENT_TYPE_FREE = 0x579;
-    private static final int CONTENT_TYPE_UNKNOWN_FEATURE = 0x9;
-
     private static final String PREFS_NAME = "steam_storage_pref";
     private static final String KEY_EXTERNAL_API = "use_external_api";
     private static final String KEY_CUSTOM_STORAGE = "use_custom_storage";
@@ -155,16 +150,6 @@ public class GameHubPrefs {
             return proposedState;
         }
         return proposedState;
-    }
-
-    /**
-     * Returns true if the given LauncherConfig content type should be blocked.
-     * Content types DISCOVER, FREE, and UNKNOWN_FEATURE are blocked.
-     */
-    public static boolean shouldBlockFeature(int contentType) {
-        return contentType == CONTENT_TYPE_DISCOVER
-                || contentType == CONTENT_TYPE_FREE
-                || contentType == CONTENT_TYPE_UNKNOWN_FEATURE;
     }
 
     /**
