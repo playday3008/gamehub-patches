@@ -86,6 +86,10 @@ public final class app/revanced/patches/gamehub/ui/search/HideHotSearchesPatchKt
 	public static final fun getHideHotSearchesPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
 
+public final class app/revanced/patches/gamehub/ui/search/HidePopularSearchesPatchKt {
+	public static final fun getHidePopularSearchesPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
+}
+
 public final class app/revanced/patches/gamehub/ui/statusbar/BatteryDisplayPatchKt {
 	public static final fun getBatteryDisplayPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }

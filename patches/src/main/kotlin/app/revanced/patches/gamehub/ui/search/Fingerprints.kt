@@ -12,3 +12,13 @@ internal val getHotTrendingKeywordsFingerprint = fingerprint {
             } == true
     }
 }
+
+internal val getSearchRecommendFingerprint = fingerprint {
+    custom { method, classDef ->
+        classDef.type == "Lcom/xj/landscape/launcher/data/repository/SearchGameRepositoryV4;" &&
+            method.implementation?.instructions?.any { instruction ->
+                instruction is ReferenceInstruction &&
+                    instruction.reference.toString().contains("getSearchRecommend")
+            } == true
+    }
+}
