@@ -2,7 +2,6 @@ package app.revanced.extension.gamehub.ui;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 
 import app.revanced.extension.gamehub.prefs.GameHubPrefs;
+import app.revanced.extension.gamehub.util.DeviceMetrics;
 import app.revanced.extension.gamehub.util.GHLog;
 
 /**
@@ -33,10 +33,6 @@ public final class CpuUsageHelper {
     private static final Handler handler = new Handler(Looper.getMainLooper());
     private static WeakReference<TextView> cpuTextViewRef;
     private static boolean refreshLoopRunning = false;
-
-    // Previous snapshot for delta computation.
-    private static long prevCpuTime = -1;
-    private static long prevWallTime = -1;
 
     /**
      * Called from BatteryUtil.a(Context, ImageView) after battery level injection.
@@ -96,7 +92,7 @@ public final class CpuUsageHelper {
                 return;
             }
 
-            int cpuPercent = readCpuUsage();
+            int cpuPercent = DeviceMetrics.readCpuUsage();
             if (cpuPercent < 0) {
                 cpuTextView.setVisibility(View.GONE);
                 return;
@@ -109,35 +105,4 @@ public final class CpuUsageHelper {
         }
     }
 
-    /**
-     * Computes app CPU usage as a percentage delta since the last call using
-     * {@link android.os.Process#getElapsedCpuTime()} (ms of CPU time consumed
-     * by this process across all cores) and {@link SystemClock#elapsedRealtime()}
-     * (wall clock ms since boot). Normalized by available processor count so the
-     * result stays in the 0–100 range on multi-core devices.
-     *
-     * @return CPU usage percentage (0–100), or -1 on the first call (no baseline).
-     */
-    private static int readCpuUsage() {
-        long cpuTime = android.os.Process.getElapsedCpuTime();
-        long wallTime = SystemClock.elapsedRealtime();
-
-        if (prevCpuTime < 0) {
-            prevCpuTime = cpuTime;
-            prevWallTime = wallTime;
-            return -1;
-        }
-
-        long cpuDelta = cpuTime - prevCpuTime;
-        long wallDelta = wallTime - prevWallTime;
-
-        prevCpuTime = cpuTime;
-        prevWallTime = wallTime;
-
-        if (wallDelta <= 0) return 0;
-
-        int cores = Runtime.getRuntime().availableProcessors();
-        int percent = (int) (cpuDelta * 100 / (wallDelta * cores));
-        return Math.min(percent, 100);
-    }
 }
