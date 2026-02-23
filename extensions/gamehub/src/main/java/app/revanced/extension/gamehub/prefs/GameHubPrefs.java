@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 
 import app.revanced.extension.gamehub.token.TokenProvider;
+import app.revanced.extension.gamehub.ui.CompatibilityCache;
 import app.revanced.extension.gamehub.util.GHLog;
 import com.blankj.utilcode.util.Utils;
 
@@ -36,7 +37,8 @@ public class GameHubPrefs {
     }
 
     /**
-     * Clears cached component data and tokens so the app re-downloads from the new API source.
+     * Clears cached component data, tokens, HTTP response cache, cookies, and in-memory
+     * compatibility data so the app re-downloads everything from the new API source.
      * Must be called whenever the API source changes (toggle or startup mismatch detection).
      */
     private static void clearComponentAndTokenCaches() {
@@ -49,11 +51,34 @@ public class GameHubPrefs {
             ctx.getSharedPreferences("sp_winemu_all_imageFs", mode).edit().clear().apply();
             // Clear global component metadata (dxvk, vkd3d, imagefs, steam_client, general_component).
             ctx.getSharedPreferences("pc_g_setting", mode).edit().clear().apply();
+            // Clear persistent cookies (PersistentCookieJar stores session cookies here).
+            ctx.getSharedPreferences("net_cookies", mode).edit().clear().apply();
             // Flush token caches (in-memory L1 + SharedPreferences L2).
             TokenProvider.clearCache();
-            GHLog.PREFS.d("Clearing component and token caches for API source change");
+            // Clear in-memory game compatibility cache.
+            CompatibilityCache.clear();
+            // Delete OkHttp HTTP response cache (128 MB disk cache in getCacheDir/).
+            // DiskLruCache handles missing/corrupted files gracefully on next startup.
+            deleteCacheContents(ctx.getCacheDir());
+            GHLog.PREFS.d("Cleared all caches for API source change");
         } catch (Exception e) {
             GHLog.PREFS.w("clearComponentAndTokenCaches failed", e);
+        }
+    }
+
+    /**
+     * Recursively deletes all files and subdirectories inside the given directory.
+     * The directory itself is preserved.
+     */
+    private static void deleteCacheContents(java.io.File dir) {
+        if (dir == null || !dir.isDirectory()) return;
+        java.io.File[] files = dir.listFiles();
+        if (files == null) return;
+        for (java.io.File file : files) {
+            if (file.isDirectory()) {
+                deleteCacheContents(file);
+            }
+            file.delete();
         }
     }
 

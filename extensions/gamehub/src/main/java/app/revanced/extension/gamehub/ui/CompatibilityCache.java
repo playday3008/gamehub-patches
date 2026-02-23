@@ -17,6 +17,14 @@ public final class CompatibilityCache {
     private static final ConcurrentHashMap<String, Object> sCache = new ConcurrentHashMap<>();
 
     /**
+     * Clears all cached compatibility data.
+     * Called when the API source changes to discard stale data from the previous API.
+     */
+    public static void clear() {
+        sCache.clear();
+    }
+
+    /**
      * Called from {@code SteamGameDataHandler.h()} after loading a
      * {@code SimpleGameCompatibility} from the compatibility map.
      * Stores it keyed by Steam app ID for later fallback lookup.
