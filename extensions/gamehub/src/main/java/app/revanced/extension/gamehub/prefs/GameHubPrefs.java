@@ -15,6 +15,7 @@ public class GameHubPrefs {
     public static final int CONTENT_TYPE_SD_CARD_STORAGE = 0x18;
     public static final int CONTENT_TYPE_API = 0x1a;
     public static final int CONTENT_TYPE_LOG_REQUESTS = 0x1b;
+    public static final int CONTENT_TYPE_CPU_USAGE = 0x1c;
 
     private static final String PREFS_NAME = "steam_storage_pref";
     private static final String KEY_EXTERNAL_API = "use_external_api";
@@ -22,6 +23,7 @@ public class GameHubPrefs {
     private static final String KEY_STORAGE_PATH = "steam_storage_path";
     private static final String KEY_LAST_API_SOURCE = "last_api_source";
     private static final String KEY_LOG_ALL_REQUESTS = "log_all_requests";
+    private static final String KEY_CPU_USAGE = "cpu_usage_display";
 
     private static volatile boolean startupCheckDone = false;
 
@@ -35,6 +37,10 @@ public class GameHubPrefs {
 
     public static boolean isLogAllRequestsEnabled() {
         return getPrefs().getBoolean(KEY_LOG_ALL_REQUESTS, false);
+    }
+
+    public static boolean isCpuUsageEnabled() {
+        return getPrefs().getBoolean(KEY_CPU_USAGE, true);
     }
 
     public static void toggleAPI() {
@@ -112,6 +118,7 @@ public class GameHubPrefs {
         if (contentType == CONTENT_TYPE_SD_CARD_STORAGE) return isCustomStorageEnabled();
         if (contentType == CONTENT_TYPE_API) return isExternalAPI();
         if (contentType == CONTENT_TYPE_LOG_REQUESTS) return isLogAllRequestsEnabled();
+        if (contentType == CONTENT_TYPE_CPU_USAGE) return isCpuUsageEnabled();
         return false;
     }
 
@@ -128,6 +135,7 @@ public class GameHubPrefs {
         if (contentType == CONTENT_TYPE_SD_CARD_STORAGE) return isCustomStorageEnabled();
         if (contentType == CONTENT_TYPE_API) return isExternalAPI();
         if (contentType == CONTENT_TYPE_LOG_REQUESTS) return isLogAllRequestsEnabled();
+        if (contentType == CONTENT_TYPE_CPU_USAGE) return isCpuUsageEnabled();
         return defaultValue;
     }
 
@@ -192,6 +200,7 @@ public class GameHubPrefs {
         if (contentType == CONTENT_TYPE_SD_CARD_STORAGE) return "SD Card Storage";
         if (contentType == CONTENT_TYPE_API) return "EmuReady API";
         if (contentType == CONTENT_TYPE_LOG_REQUESTS) return "Log All Requests";
+        if (contentType == CONTENT_TYPE_CPU_USAGE) return "CPU Usage Display";
         return null;
     }
 
@@ -225,6 +234,12 @@ public class GameHubPrefs {
             boolean newState = !isLogAllRequestsEnabled();
             getPrefs().edit().putBoolean(KEY_LOG_ALL_REQUESTS, newState).apply();
             String msg = newState ? "Logging all API requests" : "Logging 4xx requests only";
+            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
+            return newState;
+        } else if (contentType == CONTENT_TYPE_CPU_USAGE) {
+            boolean newState = !isCpuUsageEnabled();
+            getPrefs().edit().putBoolean(KEY_CPU_USAGE, newState).apply();
+            String msg = newState ? "CPU usage display enabled" : "CPU usage display disabled";
             android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
             return newState;
         } else if (contentType == CONTENT_TYPE_API) {

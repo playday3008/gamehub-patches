@@ -12,7 +12,8 @@ public enum GHLog {
     FILE_MGR("FileMgr"),
     STORAGE("Storage"),
     NET("Net"),
-    CDN("CDN");
+    CDN("CDN"),
+    CPU("CPU");
 
     private static final String PREFIX = "GHL/";
     private final String tag;

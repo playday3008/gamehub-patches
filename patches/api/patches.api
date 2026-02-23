@@ -102,6 +102,10 @@ public final class app/revanced/patches/gamehub/ui/statusbar/BatteryDisplayPatch
 	public static final fun getBatteryDisplayPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
 
+public final class app/revanced/patches/gamehub/ui/statusbar/CpuDisplayPatchKt {
+	public static final fun getCpuDisplayPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
+}
+
 public final class app/revanced/patches/gamehub/ui/tabs/DisableTabsPatchKt {
 	public static final fun getDisableTabsPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
