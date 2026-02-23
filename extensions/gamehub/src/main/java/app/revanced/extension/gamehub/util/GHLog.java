@@ -13,7 +13,8 @@ public enum GHLog {
     STORAGE("Storage"),
     NET("Net"),
     CDN("CDN"),
-    CPU("CPU");
+    CPU("CPU"),
+    PERF("Perf");
 
     private static final String PREFIX = "GHL/";
     private final String tag;

@@ -90,6 +90,10 @@ public final class app/revanced/patches/gamehub/ui/gamedetail/HideRecommendedGam
 	public static final fun getHideRecommendedGamesPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
 
+public final class app/revanced/patches/gamehub/ui/overlay/PerformanceMetricsPatchKt {
+	public static final fun getPerformanceMetricsPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
+}
+
 public final class app/revanced/patches/gamehub/ui/search/HideHotSearchesPatchKt {
 	public static final fun getHideHotSearchesPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
