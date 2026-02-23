@@ -113,7 +113,7 @@ private val manifestCleanupResourcePatch = resourcePatch {
                     it == "android.adservices.AD_SERVICES_CONFIG" ||
                     it.startsWith("com.sec.android.") ||
                     it.startsWith("com.android.graphics.") ||
-                    it == "android.game_mode_config" ||
+                    // Keep android.game_mode_config — needed for Game Mode API / Game Booster.
                     it == "com.alipay.sdk.appId"
             }
 
@@ -122,9 +122,12 @@ private val manifestCleanupResourcePatch = resourcePatch {
                 it == "com.sec.android.app.multiwindow"
             }
 
-            // Add hardwareAccelerated to <application>
+            // Add hardwareAccelerated and game category to <application>.
+            // appCategory="game" makes Samsung Game Booster recognize the app,
+            // enabling performance mode and memory priority for Wine processes.
             val appNode = dom.getNode("application") as Element
             appNode.setAttribute("android:hardwareAccelerated", "true")
+            appNode.setAttribute("android:appCategory", "game")
 
             // Configure specific activities
             dom.getElementsByTagName("activity").asSequence()
@@ -170,6 +173,16 @@ private val manifestCleanupResourcePatch = resourcePatch {
                         name.contains("SteamService")
                 }
                 .forEach { it.removeAttribute("android:foregroundServiceType") }
+        }
+
+        // Enable performance game mode so Android's Game Mode API (and Samsung Game Booster)
+        // can prioritise CPU/GPU/memory for the app.
+        document("res/xml/game_mode_config.xml").use { dom ->
+            val root = dom.documentElement as Element
+            root.setAttribute("android:supportsPerformanceGameMode", "true")
+            root.setAttribute("android:supportsBatteryGameMode", "false")
+            root.setAttribute("android:allowGameDownscaling", "true")
+            root.setAttribute("android:allowGameFpsOverride", "true")
         }
     }
 }
