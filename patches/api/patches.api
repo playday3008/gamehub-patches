@@ -58,6 +58,10 @@ public final class app/revanced/patches/gamehub/misc/ota/DisableOtaUpdatesPatchK
 	public static final fun getDisableOtaUpdatesPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
 
+public final class app/revanced/patches/gamehub/misc/playtime/SteamPlaytimePatchKt {
+	public static final fun getSteamPlaytimePatch ()Lapp/revanced/patcher/patch/BytecodePatch;
+}
+
 public final class app/revanced/patches/gamehub/misc/push/DisablePushPatchKt {
 	public static final fun getDisablePushPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }

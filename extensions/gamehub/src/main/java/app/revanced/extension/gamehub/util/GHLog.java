@@ -14,7 +14,8 @@ public enum GHLog {
     NET("Net"),
     CDN("CDN"),
     CPU("CPU"),
-    PERF("Perf");
+    PERF("Perf"),
+    PLAYTIME("Playtime");
 
     private static final String PREFIX = "GHL/";
     private final String tag;
