@@ -46,6 +46,10 @@ public final class app/revanced/patches/gamehub/misc/debugstrings/TranslateDebug
 	public static final fun getTranslateDebugStringsPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
 
+public final class app/revanced/patches/gamehub/misc/heartbeat/DisableHeartbeatPatchKt {
+	public static final fun getDisableHeartbeatPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
+}
+
 public final class app/revanced/patches/gamehub/misc/login/BypassLoginPatchKt {
 	public static final fun getBypassLoginPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
