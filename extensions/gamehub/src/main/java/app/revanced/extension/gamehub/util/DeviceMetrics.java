@@ -16,8 +16,8 @@ import java.util.Locale;
  * (app-level, not system-wide) and cached for 500ms so multiple callers running
  * concurrent refresh loops don't corrupt each other's baselines.
  *
- * <p>GPU usage is read from sysfs (Qualcomm Adreno or ARM Mali) and returns -1 when
- * the kernel doesn't expose a utilisation node.
+ * <p>GPU usage is read from sysfs (Qualcomm Adreno, ARM Mali, Samsung Exynos,
+ * or Amlogic) and returns -1 when the kernel doesn't expose a utilisation node.
  *
  * <p>RAM usage uses {@link ActivityManager.MemoryInfo} for system-wide totals.
  */
@@ -45,6 +45,7 @@ public final class DeviceMetrics {
         }
 
         long cpuTime = android.os.Process.getElapsedCpuTime();
+        if (cpuTime == 0) return -1; // clock_gettime failed
 
         if (prevCpuTime < 0) {
             prevCpuTime = cpuTime;
@@ -70,7 +71,11 @@ public final class DeviceMetrics {
 
     // --- GPU (sysfs-based, path resolved once) ---
 
+    private static final int GPU_FORMAT_PERCENTAGE = 0;
+    private static final int GPU_FORMAT_BUSY_TOTAL = 1;
+
     private static String gpuSysfsPath;
+    private static int gpuFormat;
     private static boolean gpuPathResolved = false;
 
     /**
@@ -88,8 +93,9 @@ public final class DeviceMetrics {
 
             if (line == null) return -1;
 
-            // Qualcomm: "busy total" format (e.g., "1234567 9876543").
-            if (path.contains("kgsl")) {
+            if (gpuFormat == GPU_FORMAT_BUSY_TOTAL) {
+                // Qualcomm gpubusy: "busy total" format (e.g., "1234567 9876543").
+                // Values are pre-computed deltas by the kernel (~1s window), not cumulative.
                 String[] parts = line.trim().split("\\s+");
                 if (parts.length >= 2) {
                     long busy = Long.parseLong(parts[0]);
@@ -101,7 +107,7 @@ public final class DeviceMetrics {
                 return -1;
             }
 
-            // Mali: single percentage value or "0.00" float.
+            // Single percentage value (integer or float like "45.00").
             line = line.trim();
             if (line.contains(".")) {
                 return (int) Float.parseFloat(line);
@@ -116,29 +122,60 @@ public final class DeviceMetrics {
         if (gpuPathResolved) return gpuSysfsPath;
         gpuPathResolved = true;
 
-        // Qualcomm Adreno.
-        String qualcomm = "/sys/class/kgsl/kgsl-3d0/gpubusy";
-        if (new File(qualcomm).canRead()) {
-            gpuSysfsPath = qualcomm;
-            GHLog.PERF.d("GPU sysfs: Qualcomm (kgsl)");
+        // Qualcomm Adreno: pre-calculated percentage (newer kernels 4.14+).
+        String qualcommPct = "/sys/class/kgsl/kgsl-3d0/gpu_busy_percentage";
+        if (new File(qualcommPct).canRead()) {
+            gpuSysfsPath = qualcommPct;
+            gpuFormat = GPU_FORMAT_PERCENTAGE;
+            GHLog.PERF.d("GPU sysfs: Qualcomm gpu_busy_percentage");
             return gpuSysfsPath;
         }
 
-        // Mali: search platform devices.
+        // Qualcomm Adreno: "busy total" pair (widely available).
+        String qualcommBusy = "/sys/class/kgsl/kgsl-3d0/gpubusy";
+        if (new File(qualcommBusy).canRead()) {
+            gpuSysfsPath = qualcommBusy;
+            gpuFormat = GPU_FORMAT_BUSY_TOTAL;
+            GHLog.PERF.d("GPU sysfs: Qualcomm gpubusy");
+            return gpuSysfsPath;
+        }
+
+        // Samsung Exynos (Mali or Xclipse): standardized kernel path.
+        String samsung = "/sys/kernel/gpu/gpu_load";
+        if (new File(samsung).canRead()) {
+            gpuSysfsPath = samsung;
+            gpuFormat = GPU_FORMAT_PERCENTAGE;
+            GHLog.PERF.d("GPU sysfs: Samsung gpu_load");
+            return gpuSysfsPath;
+        }
+
+        // Mali: search platform devices (check both British and American spelling).
         try {
             File platform = new File("/sys/devices/platform");
             File[] children = platform.listFiles();
             if (children != null) {
                 for (File child : children) {
-                    File util = new File(child, "gpu/utilisation");
-                    if (util.canRead()) {
-                        gpuSysfsPath = util.getAbsolutePath();
-                        GHLog.PERF.d("GPU sysfs: Mali (" + gpuSysfsPath + ")");
-                        return gpuSysfsPath;
+                    for (String name : new String[]{"utilisation", "utilization"}) {
+                        File util = new File(child, "gpu/" + name);
+                        if (util.canRead()) {
+                            gpuSysfsPath = util.getAbsolutePath();
+                            gpuFormat = GPU_FORMAT_PERCENTAGE;
+                            GHLog.PERF.d("GPU sysfs: Mali (" + gpuSysfsPath + ")");
+                            return gpuSysfsPath;
+                        }
                     }
                 }
             }
         } catch (Exception ignored) {
+        }
+
+        // Amlogic SoCs with Mali GPU.
+        String amlogic = "/sys/class/mpgpu/utilization";
+        if (new File(amlogic).canRead()) {
+            gpuSysfsPath = amlogic;
+            gpuFormat = GPU_FORMAT_PERCENTAGE;
+            GHLog.PERF.d("GPU sysfs: Amlogic mpgpu");
+            return gpuSysfsPath;
         }
 
         GHLog.PERF.d("GPU sysfs: not available");
