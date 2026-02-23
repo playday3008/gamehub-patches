@@ -28,6 +28,21 @@ internal val steamGameDataHandlerFingerprint = fingerprint {
 }
 
 /**
+ * Matches GameDetailVM.A(GameDetailEntity) → CardLineData.
+ * Converts the recommend_game list from the API response into a CardLineData
+ * object used by GameDetailRecommendAdapter to display the recommendations section.
+ */
+internal val gameDetailRecommendFingerprint = fingerprint {
+    custom { method, classDef ->
+        classDef.type == "Lcom/xj/landscape/launcher/vm/GameDetailVM;" &&
+            method.name == "A" &&
+            method.parameterTypes.size == 1 &&
+            method.parameterTypes[0] == "Lcom/xj/common/service/bean/GameDetailEntity;" &&
+            method.returnType == "Lcom/xj/common/service/bean/CardLineData;"
+    }
+}
+
+/**
  * Matches GameDetailHeadViewHolder.A(GameDetailEntity, boolean) → void.
  * This method populates the game detail header including the compatibility section
  * (layoutCompatibility group, tvCompatibilityTitle, tvCompatibilityName, ivCompatibilityIcon).
