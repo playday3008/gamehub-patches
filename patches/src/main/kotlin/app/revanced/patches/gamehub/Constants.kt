@@ -11,6 +11,7 @@ internal const val EXTENSION_BATTERY_HELPER = "Lapp/revanced/extension/gamehub/u
 internal const val EXTENSION_GAME_ID_HELPER = "Lapp/revanced/extension/gamehub/ui/GameIdHelper;"
 internal const val EXTENSION_CURRENCY_HELPER = "Lapp/revanced/extension/gamehub/ui/AccountCurrencyHelper;"
 internal const val EXTENSION_COMPAT_CACHE = "Lapp/revanced/extension/gamehub/ui/CompatibilityCache;"
+internal const val EXTENSION_STEAM_CDN_HELPER = "Lapp/revanced/extension/gamehub/network/SteamCdnHelper;"
 
 // Content-type constants for custom settings menu items
 internal const val CONTENT_TYPE_SD_CARD_STORAGE = 0x18

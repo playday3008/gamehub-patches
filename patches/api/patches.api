@@ -66,6 +66,10 @@ public final class app/revanced/patches/gamehub/network/ApiServerSwitchPatchKt {
 	public static final fun getApiServerSwitchPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }
 
+public final class app/revanced/patches/gamehub/network/cdn/UseSteamCdnPatchKt {
+	public static final fun getUseSteamCdnPatch ()Lapp/revanced/patcher/patch/BytecodePatch;
+}
+
 public final class app/revanced/patches/gamehub/steam/storage/SdCardStoragePatchKt {
 	public static final fun getSdCardStoragePatch ()Lapp/revanced/patcher/patch/BytecodePatch;
 }

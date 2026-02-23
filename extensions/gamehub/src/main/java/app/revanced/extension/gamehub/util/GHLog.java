@@ -11,7 +11,8 @@ public enum GHLog {
     COMPAT("Compat"),
     FILE_MGR("FileMgr"),
     STORAGE("Storage"),
-    NET("Net");
+    NET("Net"),
+    CDN("CDN");
 
     private static final String PREFIX = "GHL/";
     private final String tag;
