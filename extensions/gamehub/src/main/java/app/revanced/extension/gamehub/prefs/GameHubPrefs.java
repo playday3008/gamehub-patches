@@ -14,12 +14,14 @@ public class GameHubPrefs {
     // Settings content-type constants (must match values used in patch injection).
     public static final int CONTENT_TYPE_SD_CARD_STORAGE = 0x18;
     public static final int CONTENT_TYPE_API = 0x1a;
+    public static final int CONTENT_TYPE_LOG_REQUESTS = 0x1b;
 
     private static final String PREFS_NAME = "steam_storage_pref";
     private static final String KEY_EXTERNAL_API = "use_external_api";
     private static final String KEY_CUSTOM_STORAGE = "use_custom_storage";
     private static final String KEY_STORAGE_PATH = "steam_storage_path";
     private static final String KEY_LAST_API_SOURCE = "last_api_source";
+    private static final String KEY_LOG_ALL_REQUESTS = "log_all_requests";
 
     private static volatile boolean startupCheckDone = false;
 
@@ -29,6 +31,10 @@ public class GameHubPrefs {
 
     public static boolean isExternalAPI() {
         return getPrefs().getBoolean(KEY_EXTERNAL_API, true);
+    }
+
+    public static boolean isLogAllRequestsEnabled() {
+        return getPrefs().getBoolean(KEY_LOG_ALL_REQUESTS, false);
     }
 
     public static void toggleAPI() {
@@ -105,6 +111,7 @@ public class GameHubPrefs {
     public static boolean isSettingEnabled(int contentType) {
         if (contentType == CONTENT_TYPE_SD_CARD_STORAGE) return isCustomStorageEnabled();
         if (contentType == CONTENT_TYPE_API) return isExternalAPI();
+        if (contentType == CONTENT_TYPE_LOG_REQUESTS) return isLogAllRequestsEnabled();
         return false;
     }
 
@@ -120,6 +127,7 @@ public class GameHubPrefs {
     public static boolean getInitialSwitchValue(int contentType, boolean defaultValue) {
         if (contentType == CONTENT_TYPE_SD_CARD_STORAGE) return isCustomStorageEnabled();
         if (contentType == CONTENT_TYPE_API) return isExternalAPI();
+        if (contentType == CONTENT_TYPE_LOG_REQUESTS) return isLogAllRequestsEnabled();
         return defaultValue;
     }
 
@@ -183,6 +191,7 @@ public class GameHubPrefs {
     public static String getCustomSettingName(int contentType) {
         if (contentType == CONTENT_TYPE_SD_CARD_STORAGE) return "SD Card Storage";
         if (contentType == CONTENT_TYPE_API) return "EmuReady API";
+        if (contentType == CONTENT_TYPE_LOG_REQUESTS) return "Log All Requests";
         return null;
     }
 
@@ -212,6 +221,12 @@ public class GameHubPrefs {
                 useInternalStorage();
                 return false;
             }
+        } else if (contentType == CONTENT_TYPE_LOG_REQUESTS) {
+            boolean newState = !isLogAllRequestsEnabled();
+            getPrefs().edit().putBoolean(KEY_LOG_ALL_REQUESTS, newState).apply();
+            String msg = newState ? "Logging all API requests" : "Logging 4xx requests only";
+            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
+            return newState;
         } else if (contentType == CONTENT_TYPE_API) {
             toggleAPI();
             clearComponentAndTokenCaches();
@@ -306,48 +321,108 @@ public class GameHubPrefs {
     }
 
     /**
+     * Logs every API request/response when "Log All Requests" is enabled.
+     * Injected at the start of GsonConverter.a() so it fires for ALL HTTP calls.
+     * Uses {@code peekBody()} to read the response body without consuming it.
+     *
+     * @param response okhttp3.Response object
+     */
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    public static void logApiRequest(Object response) {
+        if (!isLogAllRequestsEnabled()) return;
+        try {
+            Object request = response.getClass().getMethod("request").invoke(response);
+            Object url = request.getClass().getMethod("url").invoke(request);
+            String httpMethod = (String) request.getClass().getMethod("method").invoke(request);
+            int code = (int) response.getClass().getMethod("code").invoke(response);
+
+            GHLog.NET.d("=== API Request ===");
+            GHLog.NET.d(httpMethod + " " + url + " → HTTP " + code);
+
+            logRequestDetails(request);
+
+            // Use peekBody() to read response body without consuming the stream.
+            try {
+                String contentType = getContentType(response);
+                if (isTextContentType(contentType)) {
+                    Object peekBody = response.getClass()
+                            .getMethod("peekBody", long.class)
+                            .invoke(response, 1048576L); // 1 MB max
+                    String bodyString = (String) peekBody.getClass()
+                            .getMethod("string").invoke(peekBody);
+                    if (bodyString != null && !bodyString.isEmpty()) {
+                        GHLog.NET.d("Response body: " + bodyString);
+                    }
+                } else {
+                    long contentLength = getContentLength(response);
+                    GHLog.NET.d("Response body: <binary " + contentType
+                            + (contentLength >= 0 ? ", " + contentLength + " bytes>" : ">"));
+                }
+            } catch (Exception e) {
+                GHLog.NET.d("Response body: <unreadable>");
+            }
+        } catch (Exception e) {
+            GHLog.NET.w("logApiRequest failed", e);
+        }
+    }
+
+    /**
      * Logs the full request/response details for a failed API call.
      * Called from the GsonConverter 4xx path via bytecode injection.
-     * Uses reflection to avoid compile-time dependency on OkHttp types.
-     *
-     * <p>Headers are iterated via {@code headers.size()}, {@code headers.name(i)},
-     * {@code headers.value(i)} to bypass OkHttp's built-in redaction in {@code toString()}.
-     * The request body (for POST requests) is read via {@code okio.Buffer}.
+     * Skipped when "Log All Requests" is enabled (already logged by {@link #logApiRequest}).
      *
      * @param response okhttp3.Response object
      * @param bodyString the response body already read as a String (may be null)
      */
     @SuppressWarnings("JavaReflectionMemberAccess")
     public static void logFailedApiRequest(Object response, String bodyString) {
+        if (isLogAllRequestsEnabled()) return; // already logged by logApiRequest
         try {
             Object request = response.getClass().getMethod("request").invoke(response);
             Object url = request.getClass().getMethod("url").invoke(request);
-            Object headers = request.getClass().getMethod("headers").invoke(request);
             String httpMethod = (String) request.getClass().getMethod("method").invoke(request);
             int code = (int) response.getClass().getMethod("code").invoke(response);
 
             GHLog.NET.d("=== Failed API Request ===");
             GHLog.NET.d(httpMethod + " " + url + " → HTTP " + code);
 
-            // Iterate headers via reflection to bypass OkHttp's redaction.
-            try {
-                java.lang.reflect.Method sizeMethod = headers.getClass().getMethod("size");
-                java.lang.reflect.Method nameMethod = headers.getClass().getMethod("name", int.class);
-                java.lang.reflect.Method valueMethod = headers.getClass().getMethod("value", int.class);
-                int headerCount = (int) sizeMethod.invoke(headers);
-                for (int i = 0; i < headerCount; i++) {
-                    String name = (String) nameMethod.invoke(headers, i);
-                    String value = (String) valueMethod.invoke(headers, i);
-                    GHLog.NET.d("  " + name + ": " + value);
-                }
-            } catch (Exception e) {
-                GHLog.NET.d("Request headers (fallback): " + headers);
-            }
+            logRequestDetails(request);
 
-            // Log request body for POST/PUT/PATCH requests.
-            try {
-                Object body = request.getClass().getMethod("body").invoke(request);
-                if (body != null) {
+            if (bodyString != null) {
+                GHLog.NET.d("Response body: " + bodyString);
+            }
+        } catch (Exception e) {
+            GHLog.NET.w("logFailedApiRequest failed", e);
+        }
+    }
+
+    /**
+     * Shared helper: logs request headers and body via reflection.
+     */
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    private static void logRequestDetails(Object request) {
+        // Iterate headers via reflection to bypass OkHttp's redaction.
+        try {
+            Object headers = request.getClass().getMethod("headers").invoke(request);
+            java.lang.reflect.Method sizeMethod = headers.getClass().getMethod("size");
+            java.lang.reflect.Method nameMethod = headers.getClass().getMethod("name", int.class);
+            java.lang.reflect.Method valueMethod = headers.getClass().getMethod("value", int.class);
+            int headerCount = (int) sizeMethod.invoke(headers);
+            for (int i = 0; i < headerCount; i++) {
+                String name = (String) nameMethod.invoke(headers, i);
+                String value = (String) valueMethod.invoke(headers, i);
+                GHLog.NET.d("  " + name + ": " + value);
+            }
+        } catch (Exception e) {
+            GHLog.NET.d("Request headers: <unreadable>");
+        }
+
+        // Log request body for POST/PUT/PATCH requests.
+        try {
+            Object body = request.getClass().getMethod("body").invoke(request);
+            if (body != null) {
+                String reqContentType = getBodyContentType(body);
+                if (isTextContentType(reqContentType)) {
                     Class<?> bufferClass = Class.forName("okio.Buffer");
                     Object buffer = bufferClass.getDeclaredConstructor().newInstance();
                     body.getClass().getMethod("writeTo", Class.forName("okio.BufferedSink"))
@@ -356,16 +431,78 @@ public class GameHubPrefs {
                     if (reqBody != null && !reqBody.isEmpty()) {
                         GHLog.NET.d("Request body: " + reqBody);
                     }
+                } else {
+                    long reqLen = getBodyContentLength(body);
+                    GHLog.NET.d("Request body: <binary " + reqContentType
+                            + (reqLen >= 0 ? ", " + reqLen + " bytes>" : ">"));
                 }
-            } catch (Exception e) {
-                GHLog.NET.d("Request body: <unreadable>");
-            }
-
-            if (bodyString != null) {
-                GHLog.NET.d("Response body: " + bodyString);
             }
         } catch (Exception e) {
-            GHLog.NET.w("logFailedApiRequest failed", e);
+            GHLog.NET.d("Request body: <unreadable>");
         }
+    }
+
+    /**
+     * Extracts the Content-Type header value from an okhttp3.Response via reflection.
+     */
+    private static String getContentType(Object response) {
+        try {
+            return (String) response.getClass()
+                    .getMethod("header", String.class)
+                    .invoke(response, "Content-Type");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Extracts the Content-Length from a response header (-1 if absent/unparseable).
+     */
+    private static long getContentLength(Object response) {
+        try {
+            String val = (String) response.getClass()
+                    .getMethod("header", String.class)
+                    .invoke(response, "Content-Length");
+            return val != null ? Long.parseLong(val) : -1;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /**
+     * Extracts the media type string from a RequestBody's contentType().
+     */
+    private static String getBodyContentType(Object body) {
+        try {
+            Object mediaType = body.getClass().getMethod("contentType").invoke(body);
+            return mediaType != null ? mediaType.toString() : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Extracts the content length from a RequestBody (-1 if unknown).
+     */
+    private static long getBodyContentLength(Object body) {
+        try {
+            return (long) body.getClass().getMethod("contentLength").invoke(body);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    /**
+     * Returns true if the given Content-Type string represents text-based content
+     * that is safe to log as a string.
+     */
+    private static boolean isTextContentType(String contentType) {
+        if (contentType == null) return true; // assume text if unknown
+        String lower = contentType.toLowerCase();
+        return lower.startsWith("text/")
+                || lower.contains("json")
+                || lower.contains("xml")
+                || lower.contains("html")
+                || lower.contains("form-urlencoded");
     }
 }

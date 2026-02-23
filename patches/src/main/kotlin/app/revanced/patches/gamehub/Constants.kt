@@ -15,3 +15,4 @@ internal const val EXTENSION_COMPAT_CACHE = "Lapp/revanced/extension/gamehub/ui/
 // Content-type constants for custom settings menu items
 internal const val CONTENT_TYPE_SD_CARD_STORAGE = 0x18
 internal const val CONTENT_TYPE_API = 0x1a
+internal const val CONTENT_TYPE_LOG_REQUESTS = 0x1b

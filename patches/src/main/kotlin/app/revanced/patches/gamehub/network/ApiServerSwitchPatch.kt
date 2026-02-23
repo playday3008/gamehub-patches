@@ -8,6 +8,7 @@ import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patches.gamehub.CONTENT_TYPE_API
+import app.revanced.patches.gamehub.CONTENT_TYPE_LOG_REQUESTS
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
@@ -41,6 +42,7 @@ val apiServerSwitchPatch = bytecodePatch(
 
     execute {
         addSteamSetting(CONTENT_TYPE_API, "CONTENT_TYPE_API")
+        addSteamSetting(CONTENT_TYPE_LOG_REQUESTS, "CONTENT_TYPE_LOG_REQUESTS")
 
         // Patch both NetOkHttpInterceptor classes to add browser-like headers needed by
         // the EmuReady Cloudflare Worker endpoint.
@@ -98,6 +100,14 @@ val apiServerSwitchPatch = bytecodePatch(
                 """,
             )
         }
+
+        // GsonConverter — inject logApiRequest at the very start of the method so it
+        // captures ALL requests (not just errors).  Uses peekBody() in the extension
+        // to read the response body without consuming it.
+        gsonConverterFingerprint.method.addInstructions(
+            0,
+            "invoke-static {p2}, $STEAM_EXTENSION->logApiRequest(Ljava/lang/Object;)V",
+        )
 
         // GsonConverter — on the catch-all path (:goto_4) that would throw ConvertException,
         // return null instead so JSON parse failures from the alternative API return null.
