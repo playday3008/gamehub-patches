@@ -27,7 +27,7 @@ jobs:
             build-mode: manual
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Java
         if: matrix.language == 'java-kotlin'
@@ -45,7 +45,8 @@ jobs:
       - name: Build
         if: matrix.language == 'java-kotlin'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG_GRADLE_PROJECT_githubPackagesUsername: ${{ github.actor }}
+          ORG_GRADLE_PROJECT_githubPackagesPassword: ${{ github.token }}
         run: ./gradlew build --no-daemon
 
       - name: Perform CodeQL Analysis
