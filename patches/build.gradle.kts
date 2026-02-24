@@ -11,3 +11,12 @@ patches {
         license = "GNU General Public License v3.0"
     }
 }
+
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-Xexplicit-backing-fields",
+            "-Xcontext-parameters"
+        )
+    }
+}
