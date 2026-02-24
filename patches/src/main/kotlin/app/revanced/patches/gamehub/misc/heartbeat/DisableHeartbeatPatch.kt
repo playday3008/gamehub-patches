@@ -1,10 +1,12 @@
 package app.revanced.patches.gamehub.misc.heartbeat
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.util.returnEarly
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 @Suppress("unused")
 val disableHeartbeatPatch = bytecodePatch(
@@ -14,15 +16,49 @@ val disableHeartbeatPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    execute {
+    apply {
         // WineGameUsageTracker periodic heartbeats.
-        startHeartbeatTimeFingerprint.method.returnEarly()
-        updateHeartbeatTimeFingerprint.method.returnEarly()
-        endHeartbeatTimeFingerprint.method.returnEarly()
+        firstMethod {
+            returnType == "V" &&
+                parameterTypes.isEmpty() &&
+                definingClass == "Lcom/xj/winemu/utils/WineGameUsageTracker;" &&
+                implementation?.instructions?.any { instruction ->
+                    instruction is ReferenceInstruction &&
+                        instruction.reference.toString().contains("startHeartbeatTime")
+                } == true
+        }.returnEarly()
+
+        firstMethod {
+            returnType == "V" &&
+                parameterTypes.isEmpty() &&
+                definingClass == "Lcom/xj/winemu/utils/WineGameUsageTracker;" &&
+                implementation?.instructions?.any { instruction ->
+                    instruction is ReferenceInstruction &&
+                        instruction.reference.toString().contains("updateHeartbeatTime")
+                } == true
+        }.returnEarly()
+
+        firstMethod {
+            returnType == "V" &&
+                parameterTypes.isEmpty() &&
+                definingClass == "Lcom/xj/winemu/utils/WineGameUsageTracker;" &&
+                implementation?.instructions?.any { instruction ->
+                    instruction is ReferenceInstruction &&
+                        instruction.reference.toString().contains("endHeartbeatTime")
+                } == true
+        }.returnEarly()
 
         // SteamGameByPcEmuLaunchStrategy.checkCanStartSteamGame — server permission check
         // that also hits heartbeat/game/start. Return Pair(true, "") to always allow launch.
-        checkCanStartSteamGameFingerprint.method.addInstructions(
+        firstMethod {
+            returnType == "Ljava/lang/Object;" &&
+                parameterTypes == listOf("Ljava/lang/String;", "Lkotlin/coroutines/Continuation;") &&
+                definingClass == "Lcom/xj/landscape/launcher/launcher/strategy/SteamGameByPcEmuLaunchStrategy;" &&
+                implementation?.instructions?.any { instruction ->
+                    instruction is ReferenceInstruction &&
+                        instruction.reference.toString().contains("checkCanStartSteamGame")
+                } == true
+        }.addInstructions(
             0,
             """
                 new-instance v0, Lkotlin/Pair;

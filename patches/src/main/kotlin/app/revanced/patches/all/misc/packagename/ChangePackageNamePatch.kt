@@ -33,10 +33,9 @@ val changePackageNamePatch = resourcePatch(
     use = false,
 ) {
     packageNameOption = stringOption(
-        key = "packageName",
+        name = "packageName",
         default = "Default",
         values = mapOf("Default" to "Default"),
-        title = "Package name",
         description = "The name of the package to rename the app to.",
         required = true,
     ) {
@@ -44,22 +43,20 @@ val changePackageNamePatch = resourcePatch(
     }
 
     val updatePermissions by booleanOption(
-        key = "updatePermissions",
+        name = "updatePermissions",
         default = false,
-        title = "Update permissions",
         description = "Update compatibility receiver permissions. " +
             "Enabling this can fix installation errors, but this can also break features in certain apps.",
     )
 
     val updateProviders by booleanOption(
-        key = "updateProviders",
+        name = "updateProviders",
         default = false,
-        title = "Update providers",
         description = "Update provider names declared by the app. " +
             "Enabling this can fix installation errors, but this can also break features in certain apps.",
     )
 
-    finalize {
+    afterDependents {
         /**
          * Apps that are confirmed to not work correctly with this patch.
          * This is not an exhaustive list, and is only the apps with
@@ -80,7 +77,7 @@ val changePackageNamePatch = resourcePatch(
             val packageName = manifest.getAttribute("package")
 
             if (incompatibleAppPackages.contains(packageName)) {
-                return@finalize Logger.getLogger(this::class.java.name).severe(
+                return@afterDependents Logger.getLogger(this::class.java.name).severe(
                     "'$packageName' does not work correctly with \"Change package name\"",
                 )
             }

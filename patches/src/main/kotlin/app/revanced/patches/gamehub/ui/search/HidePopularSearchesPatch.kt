@@ -1,7 +1,9 @@
 package app.revanced.patches.gamehub.ui.search
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
 
@@ -12,8 +14,14 @@ val hidePopularSearchesPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    execute {
-        getSearchRecommendFingerprint.method.addInstructions(
+    apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/data/repository/SearchGameRepositoryV4;" &&
+                implementation?.instructions?.any { instruction ->
+                    instruction is ReferenceInstruction &&
+                        instruction.reference.toString().contains("getSearchRecommend")
+                } == true
+        }.addInstructions(
             0,
             """
                 new-instance v0, Lcom/xj/landscape/launcher/data/model/entity/SearchEntity;

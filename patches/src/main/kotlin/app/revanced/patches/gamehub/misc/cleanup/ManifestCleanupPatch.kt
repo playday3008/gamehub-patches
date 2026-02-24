@@ -10,7 +10,7 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 
 private val manifestCleanupResourcePatch = resourcePatch {
-    execute {
+    apply {
         // Remove unused assets.
         //delete("assets/NotoColorEmojiCompat.ttf")
         //delete("assets/auth_intro_timberline.webm")
@@ -197,10 +197,10 @@ val manifestCleanupPatch = bytecodePatch(
 
     dependsOn(manifestCleanupResourcePatch)
 
-    execute {
+    apply {
         // Remove payment/auth/unused SDK class trees from DEX.
         // Keep com/tencent/mmkv — MMKV is used by App.onCreate for key-value storage.
-        classes.removeIf { classDef ->
+        classDefs.removeIf { classDef ->
             val type = classDef.type
             (type.startsWith("Lcom/tencent/") &&
                 !type.startsWith("Lcom/tencent/mmkv/") &&

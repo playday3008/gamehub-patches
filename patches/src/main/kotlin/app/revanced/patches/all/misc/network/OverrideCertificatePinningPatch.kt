@@ -14,7 +14,7 @@ val overrideCertificatePinningPatch = resourcePatch(
 ) {
     dependsOn(enableAndroidDebuggingPatch)
 
-    execute {
+    apply {
         val resXmlDirectory = get("res/xml")
 
         document("AndroidManifest.xml").use { document ->

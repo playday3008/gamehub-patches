@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.misc.push
 
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
@@ -12,7 +13,7 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
 
 private val disablePushManifestPatch = resourcePatch {
-    execute {
+    apply {
         document("AndroidManifest.xml").use { dom ->
             fun removeByName(vararg tags: String, predicate: (String) -> Boolean) {
                 tags.flatMap { tag ->
@@ -55,17 +56,21 @@ val disablePushPatch = bytecodePatch(
 
     dependsOn(appNullSafetyPatch, disablePushManifestPatch)
 
-    execute {
-        pushAppFingerprint.method.returnEarly()
-        pushAppModuleFingerprint.method.returnEarly()
+    apply {
+        firstMethod { definingClass == "Lcom/xj/push/PushApp;" && name == "b" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/push/PushApp;" && name == "a" }.returnEarly()
         // Suppress the "Turn on message notifications" rationale dialog shown on first launch.
-        permissionDialogFingerprint.method.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/common/utils/PermissionUtils;" && name == "J" }.returnEarly()
         // Prevent "Push Notification" settings item from opening system notification settings.
-        openNotificationSettingsFingerprint.method.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/common/utils/PermissionUtils;" && name == "G" }.returnEarly()
 
         // Change notification setting defaults from OPEN (1) to CLOSE (2) so that
         // when the server is unreachable the UI shows all toggles as disabled.
-        notificationSettingDefaultsFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/data/model/entity/UserNotificationSettingEntity;" &&
+                name == "<init>" &&
+                parameterTypes.size == 5
+        }.apply {
             val constIdx = implementation!!.instructions.indexOfFirst {
                 it.opcode == Opcode.CONST_4 &&
                     (it as NarrowLiteralInstruction).narrowLiteral == 1
@@ -74,6 +79,6 @@ val disablePushPatch = bytecodePatch(
         }
 
         // Remove JPush SDK class tree from DEX.
-        classes.removeIf { it.type.startsWith("Lcn/jpush/") }
+        classDefs.removeIf { it.type.startsWith("Lcn/jpush/") }
     }
 }

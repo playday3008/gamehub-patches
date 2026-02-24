@@ -11,14 +11,13 @@ val changeAppNamePatch = resourcePatch(
     use = false,
 ) {
     val appName by stringOption(
-        key = "appName",
+        name = "appName",
         default = null,
-        title = "App name",
         description = "The name to display in the launcher.",
         required = true,
     )
 
-    finalize {
+    afterDependents {
         document("AndroidManifest.xml").use { document ->
             val applicationNode = document.getNode("application") as Element
             applicationNode.setAttribute("android:label", appName!!)

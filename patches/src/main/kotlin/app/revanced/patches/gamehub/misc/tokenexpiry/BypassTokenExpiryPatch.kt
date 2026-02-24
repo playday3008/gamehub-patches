@@ -1,9 +1,10 @@
 package app.revanced.patches.gamehub.misc.tokenexpiry
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.InstructionExtensions.instructions
+import app.revanced.patcher.extensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.instructions
+import app.revanced.patcher.extensions.ExternalLabel
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
-import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import app.revanced.util.returnEarly
@@ -12,16 +13,24 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 internal val bypassTokenExpiryPatch = bytecodePatch {
-    execute {
-        routerUtilsTokenExpiryFingerprint.method.returnEarly()
-        routerUtilsGuideLoginFingerprint.method.returnEarly()
+    apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/router/RouterUtils;" && name == "n"
+        }.returnEarly()
+
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/router/RouterUtils;" && name == "z"
+        }.returnEarly()
 
         // In checkGuideStep$1.invokeSuspend, after the XjLog.h() debug log call,
         // inject the same goto as the reference diff: skip the entire guide-step
         // validation block and jump directly to the DeviceManager readiness check.
         // The two const pre-loads set up registers that the DeviceManager block
         // expects to find initialised (v4 = null BooleanRef guard, v3 = FLAG_ACTIVITY_NEW_TASK).
-        routerUtilsGuideStepFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/router/RouterUtils${'$'}checkGuideStep${'$'}1;" &&
+                name == "invokeSuspend"
+        }.apply {
             val logCallIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_STATIC &&
                     getReference<MethodReference>()?.let {

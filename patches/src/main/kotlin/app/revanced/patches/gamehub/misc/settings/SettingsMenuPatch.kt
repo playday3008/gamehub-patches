@@ -1,13 +1,16 @@
 package app.revanced.patches.gamehub.misc.settings
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.firstClassDef
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.bytecodePatch
-import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
-import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef as MutableClass
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
@@ -22,9 +25,12 @@ import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableIntEncodedValue
 
 private const val ENTITY_CLASS = "Lcom/xj/landscape/launcher/data/model/entity/SettingItemEntity;"
+private const val VIEW_MODEL_CLASS = "Lcom/xj/landscape/launcher/vm/SettingItemViewModel;"
+private const val HOLDER_CLASS = "Lcom/xj/landscape/launcher/ui/setting/holder/SettingSwitchHolder;"
 private const val EXTENSION = EXTENSION_PREFS
 
 private lateinit var entityMutableClass: MutableClass
+private lateinit var settingItemViewModelMethod: MutableMethod
 
 // Insertion point in SettingItemViewModel.l() after the Language item's add() call.
 // Incremented by 9 (instructions per entry) with each addSteamSetting() call so entries
@@ -32,10 +38,12 @@ private lateinit var entityMutableClass: MutableClass
 private var viewModelInsertionIndex = 0
 
 internal val settingsMenuPatch = bytecodePatch {
-    execute {
-        entityMutableClass = proxy(settingItemEntityFingerprint.classDef).mutableClass
+    apply {
+        entityMutableClass = firstClassDef(ENTITY_CLASS)
 
-        viewModelInsertionIndex = settingItemViewModelFingerprint.method
+        settingItemViewModelMethod = firstMethod { definingClass == VIEW_MODEL_CLASS && name == "l" }
+
+        viewModelInsertionIndex = settingItemViewModelMethod
             .indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_INTERFACE &&
                     (this as? ReferenceInstruction)?.reference?.let {
@@ -52,7 +60,7 @@ internal val settingsMenuPatch = bytecodePatch {
         // existing if-ne branches still land on our code), then insert result-dispatch
         // logic immediately after.  All labels (:has_custom_name) are internal to the
         // injected block, avoiding any ExternalLabel chaining issues.
-        settingItemEntityTitleFingerprint.method.apply {
+        firstMethod { definingClass == ENTITY_CLASS && name == "getContentName" }.apply {
             val fallthroughIndex = indexOfFirstInstructionReversedOrThrow {
                 opcode == Opcode.CONST_STRING && getReference<StringReference>()?.string == ""
             }
@@ -90,7 +98,7 @@ internal val settingsMenuPatch = bytecodePatch {
         // where p0=binding and p1=entity are still live.  The method returns the ACTUAL state
         // to use (false on failure, e.g. SD card not found), overwriting v0 so that b() sets
         // the correct visual state immediately — no reopen needed.
-        settingSwitchHolderFingerprint.method.apply {
+        firstMethod { definingClass == HOLDER_CLASS && name == "w" }.apply {
             // xor-int/lit8 v0, p2, 0x1  computes v0 = proposed state.  After it:
             //   +1  invoke isNotificationContentType
             //   +2  move-result v1
@@ -114,7 +122,7 @@ internal val settingsMenuPatch = bytecodePatch {
         // rather than entity.switchValue. For our custom content types this always returns false.
         // We inject getInitialSwitchValue(contentType, defaultValue) after the helper call to
         // substitute our persisted preference value for 0x18/0x1a, pass-through for everything else.
-        settingSwitchHolderBindFingerprint.method.apply {
+        firstMethod { definingClass == HOLDER_CLASS && name == "u" }.apply {
             val cloudHelperIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_STATIC_RANGE &&
                     (this as? ReferenceInstruction)?.reference?.let {
@@ -161,7 +169,7 @@ internal val settingsMenuPatch = bytecodePatch {
  * @param contentType  The integer content-type constant (e.g. 0x18).
  * @param fieldName    The static field name to add to SettingItemEntity (e.g. "CONTENT_TYPE_SD_CARD_STORAGE").
  */
-context(BytecodePatchContext)
+context(_: BytecodePatchContext)
 internal fun addSteamSetting(contentType: Int, fieldName: String) {
     val hexType = "0x${contentType.toString(16)}"
 
@@ -183,7 +191,7 @@ internal fun addSteamSetting(contentType: Int, fieldName: String) {
     //    Registers: v0=this, v1=type(5), v2=contentType, v3=sparseArray(null),
     //               v4=Z(false), v5=defaultBitMask(0xc), v6=marker(null).
     //    Each block is exactly 9 instructions; viewModelInsertionIndex is advanced accordingly.
-    settingItemViewModelFingerprint.method.addInstructions(
+    settingItemViewModelMethod.addInstructions(
         viewModelInsertionIndex,
         """
             new-instance v0, $ENTITY_CLASS

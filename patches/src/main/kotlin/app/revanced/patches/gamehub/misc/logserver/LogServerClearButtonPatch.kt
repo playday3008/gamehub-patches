@@ -1,7 +1,8 @@
 package app.revanced.patches.gamehub.misc.logserver
 
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
@@ -18,8 +19,14 @@ val logServerClearButtonPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    execute {
-        logHttpServerPageFingerprint.method.apply {
+    apply {
+        firstMethod {
+            definingClass == "Lcom/winemu/core/server/log/LogHttpServer;" &&
+                implementation?.instructions?.any { instruction ->
+                    instruction.opcode == Opcode.CONST_STRING &&
+                        instruction.getReference<StringReference>()?.string?.contains("WinEmu Log Server") == true
+                } == true
+        }.apply {
             val htmlIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.CONST_STRING &&
                     getReference<StringReference>()?.string?.contains("WinEmu Log Server") == true

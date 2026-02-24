@@ -1,5 +1,6 @@
 package app.revanced.patches.gamehub.misc.analytics
 
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
@@ -32,7 +33,7 @@ private fun String.isAnalyticsComponent() =
     ANALYTICS_PATTERNS.any { lowercase().contains(it) }
 
 private val analyticsCleanupResourcePatch = resourcePatch {
-    execute {
+    apply {
         // Remove analytics/crash/tracking SDK native libraries.
         val libDir = get("lib")
         if (libDir.exists() && libDir.isDirectory) {
@@ -94,20 +95,25 @@ val disableAnalyticsPatch = bytecodePatch(
 
     dependsOn(analyticsCleanupResourcePatch, appNullSafetyPatch)
 
-    execute {
+    apply {
         // Umeng — disable wrapper methods in app code.
-        umengAppFingerprint.method.returnEarly()
-        umengAppModuleFingerprint.method.returnEarly()
-        iUmengServiceImplAFingerprint.method.returnEarly()
-        iUmengServiceImplBFingerprint.method.returnEarly()
-        iUmengServiceImplCFingerprint.method.returnEarly()
-        iUmengServiceImplDFingerprint.method.returnEarly()
-        iUmengServiceImplEFingerprint.method.returnEarly()
-        iUmengServiceImplFFingerprint.method.returnEarly()
-        iUmengServiceImplOnEventFingerprint.method.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/UmengApp;" && name == "b" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/UmengApp;" && name == "a" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/service/IUmengServiceImpl;" && name == "a" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/service/IUmengServiceImpl;" && name == "b" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/service/IUmengServiceImpl;" && name == "c" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/service/IUmengServiceImpl;" && name == "d" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/service/IUmengServiceImpl;" && name == "e" }.returnEarly()
+        firstMethod { definingClass == "Lcom/xj/umeng/service/IUmengServiceImpl;" && name == "f" }.returnEarly()
+        firstMethod {
+            definingClass == "Lcom/xj/umeng/service/IUmengServiceImpl;" &&
+                name == "onEvent" &&
+                parameterTypes.size == 1 &&
+                parameterTypes[0] == "Ljava/lang/String;"
+        }.returnEarly()
 
         // Remove analytics/tracking SDK class trees from DEX.
-        classes.removeIf { classDef ->
+        classDefs.removeIf { classDef ->
             val type = classDef.type
             type.startsWith("Lcom/umeng/") ||
                 type.startsWith("Lcn/jiguang/") ||

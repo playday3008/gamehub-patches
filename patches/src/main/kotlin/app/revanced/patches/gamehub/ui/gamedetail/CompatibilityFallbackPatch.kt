@@ -1,7 +1,8 @@
 package app.revanced.patches.gamehub.ui.gamedetail
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.addInstruction
+import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.EXTENSION_COMPAT_CACHE
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
@@ -21,7 +22,7 @@ val compatibilityFallbackPatch = bytecodePatch(
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch)
 
-    execute {
+    apply {
         // ── 1. Cache SimpleGameCompatibility during game list loading ──
         //
         // In SteamGameDataHandler.h(), after the compatibility map lookup:
@@ -33,7 +34,13 @@ val compatibilityFallbackPatch = bytecodePatch(
         //   check-cast v5, SimpleGameCompatibility;       ← target
         //
         // After the check-cast, v4 = steamAppId (String), v5 = SimpleGameCompatibility|null.
-        steamGameDataHandlerFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/game/ui/vm/handler/SteamGameDataHandler;" &&
+                name == "h" &&
+                parameterTypes.size == 2 &&
+                parameterTypes[0] == "Lcom/xj/common/bean/SteamGame;" &&
+                parameterTypes[1] == "Lcom/xj/game/ui/vm/handler/SteamGameDataHandler\$GameContext;"
+        }.apply {
             val checkCastIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.CHECK_CAST &&
                     (this as? ReferenceInstruction)?.reference?.toString() ==
@@ -57,7 +64,13 @@ val compatibilityFallbackPatch = bytecodePatch(
         //   [X+5]  if-eqz v8, :cond_17                          ← keep
         //   [X+6]  invoke-virtual/range {p0..p1}, R(entity)Z     ← replace with const/4 v11, 1
         //   [X+7]  move-result v11                               ← replace with nop
-        gameDetailCompatDisplayFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/holder/GameDetailHeadViewHolder;" &&
+                name == "A" &&
+                parameterTypes.size == 2 &&
+                parameterTypes[0] == "Lcom/xj/common/service/bean/GameDetailEntity;" &&
+                parameterTypes[1] == "Z"
+        }.apply {
             // Find the first getCst_data() call.
             val firstCstDataIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_VIRTUAL &&

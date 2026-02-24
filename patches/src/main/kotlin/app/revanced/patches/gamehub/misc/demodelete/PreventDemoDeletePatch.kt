@@ -1,9 +1,11 @@
 package app.revanced.patches.gamehub.misc.demodelete
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 @Suppress("unused")
 val preventDemoDeletePatch = bytecodePatch(
@@ -13,11 +15,19 @@ val preventDemoDeletePatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    execute {
+    apply {
         // UninstallGameHelper.uninstallPcDemoGame — suspend function that dispatches a coroutine
         // to delete game files and reset state. Called automatically by GameDetailVM.refreshDownloadStatusUI
         // and by the DEMO_AUTO uninstall path. Return kotlin.Unit immediately to prevent deletion.
-        uninstallPcDemoGameFingerprint.method.addInstructions(
+        firstMethod {
+            returnType == "Ljava/lang/Object;" &&
+                parameterTypes == listOf("Ljava/lang/String;", "Lkotlin/coroutines/Continuation;") &&
+                definingClass == "Lcom/xj/game/UninstallGameHelper;" &&
+                implementation?.instructions?.any { instruction ->
+                    instruction is ReferenceInstruction &&
+                        instruction.reference.toString().contains("uninstallPcDemoGame")
+                } == true
+        }.addInstructions(
             0,
             """
                 sget-object v0, Lkotlin/Unit;->a:Lkotlin/Unit;

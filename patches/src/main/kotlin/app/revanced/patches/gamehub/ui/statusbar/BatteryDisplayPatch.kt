@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.ui.statusbar
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.EXTENSION_BATTERY_HELPER
@@ -15,7 +16,7 @@ import org.w3c.dom.Element
 private const val EXTENSION_CLASS = EXTENSION_BATTERY_HELPER
 
 private val batteryLayoutPatch = resourcePatch {
-    execute {
+    apply {
         // Add resource IDs to ids.xml (idempotent)
         document("res/values/ids.xml").use { dom ->
             val root = dom.documentElement
@@ -92,11 +93,17 @@ val batteryDisplayPatch = bytecodePatch(
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch, batteryLayoutPatch)
 
-    execute {
+    apply {
         // BatteryUtil.a(Context, ImageView): after getIntProperty returns battery level
         // in p0, inject a call to update the battery percentage TextView.
         // At the injection point: p0 = battery level (int), p2 = ImageView.
-        batteryUtilFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/common/utils/BatteryUtil;" &&
+                name == "a" &&
+                parameterTypes.size == 2 &&
+                parameterTypes[0] == "Landroid/content/Context;" &&
+                parameterTypes[1] == "Landroid/widget/ImageView;"
+        }.apply {
             val moveResultIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.MOVE_RESULT && this is com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
             }

@@ -1,19 +1,18 @@
 package app.revanced.util
 
-import app.revanced.patcher.FingerprintBuilder
-import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.instructions
-import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
+import app.revanced.patcher.extensions.addInstruction
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.instructions
+import app.revanced.patcher.extensions.removeInstruction
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.PatchException
-import app.revanced.patcher.util.proxy.mutableTypes.MutableClass
-import app.revanced.patcher.util.proxy.mutableTypes.MutableField
-import app.revanced.patcher.util.proxy.mutableTypes.MutableField.Companion.toMutable
-import app.revanced.patcher.util.proxy.mutableTypes.MutableMethod
-import app.revanced.patcher.util.smali.ExternalLabel
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef as MutableClass
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
+import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.util.InstructionUtils.Companion.branchOpcodes
 import app.revanced.util.InstructionUtils.Companion.returnOpcodes
 import app.revanced.util.InstructionUtils.Companion.writeOpcodes
@@ -226,10 +225,10 @@ private fun Method.findInstructionIndexFromToString(fieldName: String): Int {
  *
  * @param fieldName The name of the field to find.  Partial matches are allowed.
  */
-context(BytecodePatchContext)
+context(ctx: BytecodePatchContext)
 internal fun Method.findMethodFromToString(fieldName: String): MutableMethod {
     val methodUsageIndex = findInstructionIndexFromToString(fieldName)
-    return navigate(this).to(methodUsageIndex).stop()
+    return ctx.navigate(this).to(methodUsageIndex).stop()
 }
 
 /**
@@ -507,8 +506,8 @@ fun BytecodePatchContext.traverseClassHierarchy(targetClass: MutableClass, callb
 
     targetClass.superclass ?: return
 
-    classBy { targetClass.superclass == it.type }?.mutableClass?.let {
-        traverseClassHierarchy(it, callback)
+    classDefs.firstOrNull { targetClass.superclass == it.type }?.let {
+        traverseClassHierarchy(classDefs.getOrReplaceMutable(it), callback)
     }
 }
 
@@ -764,7 +763,7 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
 ) {
     val matchingIndexes = ArrayList<Int>()
 
-    classes.forEach { classDef ->
+    classDefs.forEach { classDef ->
         classDef.methods.forEach { method ->
             method.implementation?.instructions?.let { instructions ->
                 matchingIndexes.clear()
@@ -776,7 +775,7 @@ fun BytecodePatchContext.forEachLiteralValueInstruction(
                 }
 
                 if (matchingIndexes.isNotEmpty()) {
-                    val mutableMethod = proxy(classDef).mutableClass.findMutableMethodOf(method)
+                    val mutableMethod = classDefs.getOrReplaceMutable(classDef).findMutableMethodOf(method)
 
                     // FIXME: Until patcher V22 is merged, this workaround is needed
                     //        because if multiple patches modify the same class
@@ -1203,9 +1202,9 @@ internal fun BytecodePatchContext.addStaticFieldToExtension(
     objectClass: String,
     smaliInstructions: String
 ) {
-    val classDef = classes.find { classDef -> classDef.type == className }
+    val classDef = classDefs.find { classDef -> classDef.type == className }
         ?: throw PatchException("No matching methods found in: $className")
-    val mutableClass = proxy(classDef).mutableClass
+    val mutableClass = classDefs.getOrReplaceMutable(classDef)
 
     val objectCall = "$mutableClass->$fieldName:$objectClass"
 
@@ -1233,17 +1232,6 @@ internal fun BytecodePatchContext.addStaticFieldToExtension(
     }
 }
 
-/**
- * Set the custom condition for this fingerprint to check for a literal value.
- *
- * @param literalSupplier The supplier for the literal value to check for.
- */
-// TODO: add a way for subclasses to also use their own custom fingerprint.
-fun FingerprintBuilder.literal(literalSupplier: () -> Long) {
-    custom { method, _ ->
-        method.containsLiteralInstruction(literalSupplier())
-    }
-}
 
 private class InstructionUtils {
     companion object {

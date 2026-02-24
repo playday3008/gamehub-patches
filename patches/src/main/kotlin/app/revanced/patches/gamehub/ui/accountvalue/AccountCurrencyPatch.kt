@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.ui.accountvalue
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.EXTENSION_CURRENCY_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
@@ -20,13 +21,17 @@ val accountCurrencyPatch = bytecodePatch(
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch)
 
-    execute {
+    apply {
         // Injection A: Capture the currency string from every PICS price conversion.
         // SteamServiceImpl.C() starts with:
         //   0: const-string p0, "<this>"
         //   1: invoke-static {p1, p0}, Intrinsics.g(...)
         // We inject at index 2, using v0 as a scratch register (it hasn't been assigned yet).
-        picsAppPriceConverterFingerprint.method.addInstructions(
+        firstMethod {
+            returnType == "Lcom/xj/common/bean/SteamGamePriceEntity;" &&
+                parameterTypes.size == 1 &&
+                parameterTypes[0] == "Lcom/xj/standalone/steam/data/db/tables/apps/SteamPicsAppPrice;"
+        }.addInstructions(
             2,
             """
                 invoke-virtual {p1}, Lcom/xj/standalone/steam/data/db/tables/apps/SteamPicsAppPrice;->getCurrency()Ljava/lang/String;
@@ -38,7 +43,12 @@ val accountCurrencyPatch = bytecodePatch(
         // Injection B: Update the account value title on the home screen user info card.
         // SteamUserInfoViewHolder.z(SteamAccount) ends with return-void.
         // p0 = this (VBViewHolder), so we call f() to get the binding.
-        steamUserInfoBindFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/ui/steam/SteamUserInfoViewHolder;" &&
+                name == "z" &&
+                parameterTypes.size == 1 &&
+                parameterTypes[0] == "Lcom/xj/common/bean/SteamAccount;"
+        }.apply {
             val returnIndex = implementation!!.instructions.size - 1
             addInstructions(
                 returnIndex,
@@ -57,7 +67,12 @@ val accountCurrencyPatch = bytecodePatch(
         // We inject right after the check-cast (while p0 is still the binding) to grab
         // tvAccountValueT (the title) and update it, then also grab viewGamePrice to find
         // and update the anonymous "Game Price (￥)" sibling label. v0 is safe to use as scratch.
-        personalInfoAccountValueFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/winemu/ui/gamelibrary/steam/ui/SteamPersonalInfoFragment;" &&
+                name == "V0" &&
+                parameterTypes.size == 2 &&
+                parameterTypes[1] == "Ljava/lang/Float;"
+        }.apply {
             val checkCastIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.CHECK_CAST &&
                     (this as? ReferenceInstruction)?.reference?.toString() ==

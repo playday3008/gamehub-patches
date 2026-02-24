@@ -1,6 +1,6 @@
 package app.revanced.patches.gamehub.misc.debugstrings
 
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.replaceInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
@@ -466,7 +466,7 @@ private val layoutTranslations = mapOf(
 )
 
 private val debugStringsLayoutPatch = resourcePatch {
-    execute {
+    apply {
         for (layoutFile in listOf(
             "res/layout/llauncher_fragment_setting_debug.xml",
             "res/layout/game_activity_game_library_main.xml",
@@ -494,10 +494,10 @@ val translateDebugStringsPatch = bytecodePatch(
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(debugStringsLayoutPatch)
 
-    execute {
+    apply {
         // Scan every class in the dex for matching const-string instructions.
         // Only classes that actually contain at least one map entry are proxied for mutation.
-        classes
+        classDefs
             .filter { classDef ->
                 classDef.methods.any { method ->
                     method.implementation?.instructions?.any { instr ->
@@ -509,7 +509,7 @@ val translateDebugStringsPatch = bytecodePatch(
                 }
             }
             .forEach { classDef ->
-                val mutableClass = proxy(classDef).mutableClass
+                val mutableClass = classDefs.getOrReplaceMutable(classDef)
                 mutableClass.methods.forEach { method ->
                     val instructions = method.implementation?.instructions ?: return@forEach
                     // Iterate in reverse so index shifts from prior replacements don't matter.

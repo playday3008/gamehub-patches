@@ -1,12 +1,14 @@
 package app.revanced.patches.gamehub.network
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.removeInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
-import app.revanced.patcher.util.smali.ExternalLabel
+import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.patches.gamehub.CONTENT_TYPE_API
 import app.revanced.patches.gamehub.CONTENT_TYPE_LOG_REQUESTS
 import app.revanced.patches.gamehub.EXTENSION_PREFS
@@ -15,7 +17,6 @@ import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.errorhandling.errorHandlingPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
-import app.revanced.patches.gamehub.misc.token.tokenProviderClinitFingerprint
 import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
@@ -40,14 +41,14 @@ val apiServerSwitchPatch = bytecodePatch(
 
     dependsOn(sharedGamehubExtensionPatch, errorHandlingPatch, settingsMenuPatch, tokenResolutionPatch)
 
-    execute {
+    apply {
         addSteamSetting(CONTENT_TYPE_API, "CONTENT_TYPE_API")
         addSteamSetting(CONTENT_TYPE_LOG_REQUESTS, "CONTENT_TYPE_LOG_REQUESTS")
 
         // Patch both NetOkHttpInterceptor classes to add browser-like headers needed by
         // the EmuReady Cloudflare Worker endpoint.
-        fun injectCompatibilityHeaders(fingerprint: app.revanced.patcher.Fingerprint) {
-            fingerprint.method.apply {
+        fun injectCompatibilityHeaders(method: MutableMethod) {
+            method.apply {
                 val newBuilderIndex = indexOfFirstInstructionOrThrow {
                     opcode == Opcode.INVOKE_VIRTUAL &&
                         (this as? ReferenceInstruction)?.reference?.let {
@@ -66,8 +67,28 @@ val apiServerSwitchPatch = bytecodePatch(
                 )
             }
         }
-        injectCompatibilityHeaders(drakeNetInterceptorFingerprint)
-        injectCompatibilityHeaders(wifiuiNetInterceptorFingerprint)
+        injectCompatibilityHeaders(
+            firstMethod {
+                definingClass == "Lcom/drake/net/interceptor/NetOkHttpInterceptor;" &&
+                    implementation?.instructions?.any { instruction ->
+                        (instruction as? ReferenceInstruction)?.reference?.let {
+                            it is MethodReference && it.name == "newBuilder" &&
+                                it.returnType == "Lokhttp3/Request\$Builder;"
+                        } == true
+                    } == true
+            },
+        )
+        injectCompatibilityHeaders(
+            firstMethod {
+                definingClass == "Lcom/xj/adb/wifiui/net/interceptor/NetOkHttpInterceptor;" &&
+                    implementation?.instructions?.any { instruction ->
+                        (instruction as? ReferenceInstruction)?.reference?.let {
+                            it is MethodReference && it.name == "newBuilder" &&
+                                it.returnType == "Lokhttp3/Request\$Builder;"
+                        } == true
+                    } == true
+            },
+        )
 
         // Patch EggGameHttpConfig.<clinit>
         // The clinit selects a URL based on environment flags, then jumps to :goto_0 which
@@ -77,7 +98,9 @@ val apiServerSwitchPatch = bytecodePatch(
         // every goto still jumps past our code.
         // Fix: replaceInstruction moves :goto_0 to our getEffectiveApiUrl call, then we
         // re-add move-result + sput so all paths go through the URL substitution.
-        eggGameHttpConfigFingerprint.method.apply {
+        firstMethod("https://landscape-api.vgabc.com/") {
+            definingClass == "Lcom/xj/common/http/EggGameHttpConfig;"
+        }.apply {
             val sputIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.SPUT_OBJECT &&
                     (this as? ReferenceInstruction)?.reference?.let {
@@ -104,7 +127,14 @@ val apiServerSwitchPatch = bytecodePatch(
         // GsonConverter — inject logApiRequest at the very start of the method so it
         // captures ALL requests (not just errors).  Uses peekBody() in the extension
         // to read the response body without consuming it.
-        gsonConverterFingerprint.method.addInstructions(
+        val gsonConverterMethod = firstMethod {
+            definingClass == "Lcom/xj/common/http/GsonConverter;" &&
+                implementation?.instructions?.any { instr ->
+                    instr.getReference<TypeReference>()?.type ==
+                        "Lcom/drake/net/exception/ConvertException;"
+                } == true
+        }
+        gsonConverterMethod.addInstructions(
             0,
             "invoke-static {p2}, $STEAM_EXTENSION->logApiRequest(Ljava/lang/Object;)V",
         )
@@ -126,7 +156,7 @@ val apiServerSwitchPatch = bytecodePatch(
         //
         // IMPORTANT: use replaceInstruction (not removeInstruction + addInstructions) so the
         // :goto_4 catch-handler label stays on the const/4 instruction, not the return-object.
-        gsonConverterFingerprint.method.apply {
+        gsonConverterMethod.apply {
             val newInstanceIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.NEW_INSTANCE &&
                     getReference<TypeReference>()?.type ==
@@ -169,7 +199,9 @@ val apiServerSwitchPatch = bytecodePatch(
         // Smali: invoke-virtual {p0, v1, p1, v0}, NetConfig;->l(String;Context;Function1;)V
         // In Instruction35c layout, registerD holds the first method argument (the URL string, v1).
         // We intercept just before the call to optionally replace the URL register.
-        wifiuiHttpConfigFingerprint.method.apply {
+        firstMethod("https://landscape-api.vgabc.com/") {
+            definingClass == "Lcom/xj/adb/wifiui/http/HttpConfig;" && name == "b"
+        }.apply {
             val netConfigCallIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_VIRTUAL &&
                     (this as? ReferenceInstruction)?.reference?.let {
@@ -192,7 +224,9 @@ val apiServerSwitchPatch = bytecodePatch(
         // Set TokenProvider.apiSwitchPatched = true so the token resolution extension
         // knows that the API switch patch is active (guards against the SharedPreferences
         // default of true when the patch isn't applied).
-        tokenProviderClinitFingerprint.method.apply {
+        firstMethod {
+            definingClass == TOKEN_PROVIDER_CLASS && name == "<clinit>"
+        }.apply {
             val returnVoidIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.RETURN_VOID }
             addInstructions(
                 returnVoidIndex,
@@ -206,7 +240,12 @@ val apiServerSwitchPatch = bytecodePatch(
         // Hook TokenRefreshInterceptor.j() — try the external token service before falling
         // through to the official jwt/refresh/token endpoint.
         // j() has .locals 7, so v0 is safe to use before the original code sets it.
-        tokenRefreshMethodFingerprint.method.apply {
+        firstMethod("jwt/refresh/token") {
+            definingClass == "Lcom/xj/common/http/interceptor/TokenRefreshInterceptor;" &&
+                name == "j" &&
+                returnType == "Ljava/lang/String;" &&
+                parameterTypes.isEmpty()
+        }.apply {
             addInstructionsWithLabels(
                 0,
                 """
@@ -225,7 +264,12 @@ val apiServerSwitchPatch = bytecodePatch(
         // We skip that entire block when loginBypassed=true.
         // Target: const-class p1, ILandscapeLauncherNavService → TheRouter.b() → .n()
         // We inject before the const-class instruction.
-        tokenRefreshInterceptFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/common/http/interceptor/TokenRefreshInterceptor;" &&
+                name == "intercept" &&
+                returnType == "Lokhttp3/Response;" &&
+                parameterTypes == listOf("Lokhttp3/Interceptor\$Chain;")
+        }.apply {
             val theRouterCallIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_STATIC &&
                     (this as? ReferenceInstruction)?.reference?.let {

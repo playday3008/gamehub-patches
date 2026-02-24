@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.ui.tabs
 
-import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
+import app.revanced.patcher.extensions.removeInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
@@ -17,8 +18,11 @@ val disableTabsPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    execute {
-        initViewFingerprint.method.apply {
+    apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/ui/main/LandscapeLauncherMainActivity;" &&
+                name == "initView"
+        }.apply {
             val discoverNewInstanceIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.NEW_INSTANCE &&
                         (this as? ReferenceInstruction)?.reference?.let {

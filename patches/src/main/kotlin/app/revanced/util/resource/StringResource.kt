@@ -31,7 +31,7 @@ class StringResource(
                         // Don't throw an exception, otherwise unnoticed mistakes
                         // in Crowdin can cause patching failures.
                         // Incorrectly escaped strings still work but do not display as intended.
-                        Logger.getLogger(StringResource.javaClass.name).warning(
+                        Logger.getLogger(StringResource::class.java.name).warning(
                             "String $name is not raw but contains encoded new line characters: $value")
                     }
                     if (!value.contains(Regex("(?<!\\\\)['\"]"))) {
@@ -39,7 +39,7 @@ class StringResource(
                     }
                 }
 
-                Logger.getLogger(StringResource.javaClass.name).warning(
+                Logger.getLogger(StringResource::class.java.name).warning(
                     "String $name cannot contain unescaped quotes in value: $value")
 
                 return this

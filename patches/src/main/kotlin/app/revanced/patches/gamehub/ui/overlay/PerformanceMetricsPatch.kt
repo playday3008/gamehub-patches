@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.ui.overlay
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.CONTENT_TYPE_PERF_METRICS
 import app.revanced.patches.gamehub.EXTENSION_PERF_METRICS
@@ -22,11 +23,16 @@ val performanceMetricsPatch = bytecodePatch(
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch)
 
-    execute {
+    apply {
         // Inject into SidebarPerformanceFragment.m0(Bundle)V before return-void.
         // Retrieves the performanceFl (FocusableLinearLayout) from the binding and
         // passes it to the extension to append metric TextViews.
-        sidebarPerformanceFragmentFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/winemu/sidebar/SidebarPerformanceFragment;" &&
+                name == "m0" &&
+                parameterTypes.size == 1 &&
+                parameterTypes[0] == "Landroid/os/Bundle;"
+        }.apply {
             val returnIndex = indexOfFirstInstructionReversedOrThrow {
                 opcode == Opcode.RETURN_VOID
             }

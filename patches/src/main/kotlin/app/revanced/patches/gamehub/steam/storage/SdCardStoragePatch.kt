@@ -1,7 +1,8 @@
 package app.revanced.patches.gamehub.steam.storage
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.CONTENT_TYPE_SD_CARD_STORAGE
 import app.revanced.patches.gamehub.EXTENSION_PREFS
@@ -10,6 +11,7 @@ import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
+import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
@@ -27,11 +29,14 @@ val sdCardStoragePatch = bytecodePatch(
 
     dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch)
 
-    execute {
+    apply {
         addSteamSetting(CONTENT_TYPE_SD_CARD_STORAGE, "CONTENT_TYPE_SD_CARD_STORAGE")
 
         // Intercept AppMetadata.setInstallPath setter to redirect the path.
-        appMetadataSetInstallPathFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/standalone/steam/data/bean/AppMetadata;" &&
+                name == "setInstallPath"
+        }.apply {
             val iputIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.IPUT_OBJECT }
             addInstructions(
                 iputIndex,
@@ -43,7 +48,10 @@ val sdCardStoragePatch = bytecodePatch(
         }
 
         // Intercept SteamDownloadExtend.setInstallDirPath setter to redirect the path.
-        steamDownloadExtendSetInstallDirPathFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/standalone/steam/data/bean/SteamDownloadExtend;" &&
+                name == "setInstallDirPath"
+        }.apply {
             val iputIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.IPUT_OBJECT }
             addInstructions(
                 iputIndex,
@@ -56,7 +64,13 @@ val sdCardStoragePatch = bytecodePatch(
 
         // DownloadGameSizeInfoDialog$computeAvailableSize$2.invokeSuspend returns Object (boxed Long).
         // Override to return available bytes on the effective storage location (SD card or internal).
-        downloadDialogStorageFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/ui/dialog/" +
+                "DownloadGameSizeInfoDialog\$computeAvailableSize\$2;" &&
+                implementation?.instructions?.any { instr ->
+                    instr.getReference<MethodReference>()?.name == "getExternalStorageDirectory"
+                } == true
+        }.apply {
             addInstructions(
                 0,
                 """
@@ -72,7 +86,15 @@ val sdCardStoragePatch = bytecodePatch(
         // SteamDownloadInfoHelper.a() calls AppMetadata.setInstallPath(path) when the current
         // install path is empty. We intercept just before that call to translate the path through
         // our extension, which may redirect it to the user-configured custom storage path.
-        steamDownloadInfoHelperFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/standalone/steam/core/SteamDownloadInfoHelper;" &&
+                name == "a" &&
+                implementation?.instructions?.any { instruction ->
+                    (instruction as? ReferenceInstruction)?.reference?.let {
+                        it is MethodReference && it.name == "setInstallPath"
+                    } == true
+                } == true
+        }.apply {
             val setInstallPathIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_VIRTUAL &&
                     (this as? ReferenceInstruction)?.reference?.let {

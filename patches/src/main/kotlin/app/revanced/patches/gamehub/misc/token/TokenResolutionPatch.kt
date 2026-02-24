@@ -1,12 +1,16 @@
 package app.revanced.patches.gamehub.misc.token
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.EXTENSION_TOKEN_PROVIDER
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+
+internal const val TOKEN_PROVIDER_CLASS = EXTENSION_TOKEN_PROVIDER
 
 /**
  * Internal patch that hooks `UserManager.getToken()` to pass the original return value
@@ -21,10 +25,12 @@ import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 internal val tokenResolutionPatch = bytecodePatch {
     dependsOn(sharedGamehubExtensionPatch)
 
-    execute {
+    apply {
         // Patch every return-object in UserManager.getToken() to pass the value
         // through TokenProvider.resolveToken(String) before returning.
-        getTokenFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/common/user/UserManager;" && name == "getToken"
+        }.apply {
             val instructions = implementation!!.instructions
 
             // Collect return-object indices in descending order so insertions don't shift

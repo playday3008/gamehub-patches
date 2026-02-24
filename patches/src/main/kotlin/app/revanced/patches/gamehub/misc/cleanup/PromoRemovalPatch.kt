@@ -1,5 +1,6 @@
 package app.revanced.patches.gamehub.misc.cleanup
 
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
@@ -8,7 +9,7 @@ import app.revanced.util.returnEarly
 import org.w3c.dom.Element
 
 private val hideCommunityBannerPatch = resourcePatch {
-    execute {
+    apply {
         document("res/layout/llauncher_view_my_top_platform_pc_emulator_info.xml").use { dom ->
             (dom.documentElement as Element).apply {
                 setAttribute("android:visibility", "gone")
@@ -28,7 +29,10 @@ val popupRemovalPatch = bytecodePatch(
 
     dependsOn(hideCommunityBannerPatch)
 
-    execute {
-        promotionalDialogFingerprint.method.returnEarly()
+    apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/view/popup/PromotionalDialogFragment;" &&
+                name == "initView"
+        }.returnEarly()
     }
 }

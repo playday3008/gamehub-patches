@@ -16,24 +16,21 @@ val customNetworkSecurityPatch = resourcePatch(
 ) {
 
     val targetDomains by stringsOption(
-        key = "targetDomains",
-        title = "Target domains",
+        name = "targetDomains",
         description = "List of domains to which the custom trust configuration will be applied (one domain per entry).",
         default = listOf("example.com"),
         required = true,
     )
 
     val includeSubdomains by booleanOption(
-        key = "includeSubdomains",
-        title = "Include subdomains",
+        name = "includeSubdomains",
         description = "Applies the configuration to all subdomains of the target domains.",
         default = false,
         required = true,
     )
 
     val customCAFilePaths by stringsOption(
-        key = "customCAFilePaths",
-        title = "Custom CA file paths",
+        name = "customCAFilePaths",
         description = """
             List of paths to files in PEM or DER format (one file path per entry).
 
@@ -48,32 +45,28 @@ val customNetworkSecurityPatch = resourcePatch(
     )
 
     val allowUserCerts by booleanOption(
-        key = "allowUserCerts",
-        title = "Trust user added CAs",
+        name = "allowUserCerts",
         description = "Makes an app trust certificates from the Android user store for the specified domains, and if the option \"Include Subdomains\" is enabled then also the subdomains.",
         default = false,
         required = true,
     )
 
     val allowSystemCerts by booleanOption(
-        key = "allowSystemCerts",
-        title = "Trust system CAs",
+        name = "allowSystemCerts",
         description = "Makes an app trust certificates from the Android system store for the specified domains, and and if the option \"Include Subdomains\" is enabled then also the subdomains.",
         default = true,
         required = true,
     )
 
     val allowCleartextTraffic by booleanOption(
-        key = "allowCleartextTraffic",
-        title = "Allow cleartext traffic (HTTP)",
+        name = "allowCleartextTraffic",
         description = "Allows unencrypted HTTP traffic for the specified domains, and if \"Include Subdomains\" is enabled then also the subdomains.",
         default = false,
         required = true,
     )
 
     val overridePins by booleanOption(
-        key = "overridePins",
-        title = "Override certificate pinning",
+        name = "overridePins",
         description = "Overrides certificate pinning for the specified domains and their subdomains if the option \"Include Subdomains\" is enabled to allow inspecting app traffic via a proxy.",
         default = false,
         required = true,
@@ -124,7 +117,7 @@ ${trustAnchorsXML.trimEnd()}
     """.trimIndent()
     }
 
-    execute {
+    apply {
         val nscFileNameBare = "network_security_config"
         val resXmlDir = "res/xml"
         val resRawDir = "res/raw"

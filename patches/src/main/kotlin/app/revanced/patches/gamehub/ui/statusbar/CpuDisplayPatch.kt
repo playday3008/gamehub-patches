@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.ui.statusbar
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.CONTENT_TYPE_CPU_USAGE
@@ -18,7 +19,7 @@ import org.w3c.dom.Element
 private const val EXTENSION_CLASS = EXTENSION_CPU_HELPER
 
 private val cpuLayoutPatch = resourcePatch {
-    execute {
+    apply {
         // Add tv_cpu_percent resource ID to ids.xml.
         document("res/values/ids.xml").use { dom ->
             val root = dom.documentElement
@@ -82,11 +83,17 @@ val cpuDisplayPatch = bytecodePatch(
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch, cpuLayoutPatch)
 
-    execute {
+    apply {
         // Hook BatteryUtil.a(Context, ImageView) before RETURN_VOID.
         // This is completely separate from the battery patch which hooks after MOVE_RESULT.
         // We only need p2 (the ImageView) to navigate to tv_cpu_percent in the parent.
-        cpuUtilFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/common/utils/BatteryUtil;" &&
+                name == "a" &&
+                parameterTypes.size == 2 &&
+                parameterTypes[0] == "Landroid/content/Context;" &&
+                parameterTypes[1] == "Landroid/widget/ImageView;"
+        }.apply {
             val returnIndex = indexOfFirstInstructionReversedOrThrow {
                 opcode == Opcode.RETURN_VOID
             }

@@ -1,10 +1,11 @@
 package app.revanced.patches.gamehub.misc.playtime
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.instructions
+import app.revanced.patcher.extensions.addInstructionsWithLabels
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.instructions
+import app.revanced.patcher.extensions.ExternalLabel
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
-import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patches.gamehub.EXTENSION_PLAYTIME_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
@@ -20,8 +21,8 @@ val steamPlaytimePatch = bytecodePatch(
     dependsOn(sharedGamehubExtensionPatch)
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    execute {
-        getUserPlayTimeListFingerprint.method.apply {
+    apply {
+        firstMethod("heartbeat/game/getUserPlayTimeList").apply {
             // Find the const-string that starts the API call.
             val apiStringIndex = instructions.indexOfFirst {
                 it.opcode == Opcode.CONST_STRING &&

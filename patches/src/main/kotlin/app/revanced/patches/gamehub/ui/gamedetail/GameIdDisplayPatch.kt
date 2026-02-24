@@ -1,7 +1,8 @@
 package app.revanced.patches.gamehub.ui.gamedetail
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
+import app.revanced.patcher.extensions.addInstruction
+import app.revanced.patcher.extensions.replaceInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.EXTENSION_GAME_ID_HELPER
@@ -14,7 +15,7 @@ import org.w3c.dom.Element
 private const val EXTENSION_CLASS = EXTENSION_GAME_ID_HELPER
 
 private val gameIdLayoutPatch = resourcePatch {
-    execute {
+    apply {
         // Register resource IDs so getIdentifier() can resolve them at runtime
         document("res/values/ids.xml").use { dom ->
             val root = dom.documentElement
@@ -46,7 +47,7 @@ private val gameIdLayoutPatch = resourcePatch {
                 // Check if already present
                 val existing = dom.getElementsByTagName("*").asSequence()
                     .any { (it as Element).getAttribute("android:id")?.contains("ll_game_id_container") == true }
-                if (existing) return@execute
+                if (existing) return@apply
 
                 // Vertical container with two tap-to-copy TextViews
                 val container = dom.createElement("LinearLayout").apply {
@@ -108,10 +109,13 @@ val gameIdDisplayPatch = bytecodePatch(
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch, gameIdLayoutPatch)
 
-    execute {
+    apply {
         // The return-void in onCreate has the :cond_0 label on it (the logged-in branch jumps there).
         // Using replaceInstruction moves the label to our call, then we append a new return-void.
-        gameDetailOnCreateFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/ui/gamedetail/GameDetailActivity;" &&
+                name == "onCreate"
+        }.apply {
             val returnIndex = implementation!!.instructions.size - 1
             replaceInstruction(returnIndex, "invoke-static {p0}, $EXTENSION_CLASS->populateGameId(Landroid/app/Activity;)V")
             addInstruction(returnIndex + 1, "return-void")

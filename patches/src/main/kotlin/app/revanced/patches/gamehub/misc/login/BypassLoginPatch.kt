@@ -1,14 +1,14 @@
 package app.revanced.patches.gamehub.misc.login
 
-import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
-import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
-import app.revanced.patcher.extensions.InstructionExtensions.removeInstruction
+import app.revanced.patcher.extensions.addInstructions
+import app.revanced.patcher.extensions.getInstruction
+import app.revanced.patcher.extensions.removeInstruction
+import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.stringOption
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
-import app.revanced.patches.gamehub.misc.token.tokenProviderClinitFingerprint
 import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
 import app.revanced.patches.gamehub.misc.tokenexpiry.bypassTokenExpiryPatch
 import app.revanced.util.getReference
@@ -20,6 +20,8 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
+private const val USER_MANAGER_CLASS = "Lcom/xj/common/user/UserManager;"
+
 @Suppress("unused")
 val bypassLoginPatch = bytecodePatch(
     name = "Bypass login",
@@ -30,25 +32,22 @@ val bypassLoginPatch = bytecodePatch(
     dependsOn(bypassTokenExpiryPatch, tokenResolutionPatch)
 
     val username by stringOption(
-        key = "username",
+        name = "username",
         default = "GHLite",
-        title = "Username",
         description = "The username shown in the app profile. Maximum 8 characters.",
         required = true,
     ) { it != null && it.isNotEmpty() && it.length <= 8 }
 
     val nickname by stringOption(
-        key = "nickname",
+        name = "nickname",
         default = "GameHub Lite",
-        title = "Nickname",
         description = "The display nickname shown in the app. Maximum 32 characters.",
         required = true,
     ) { it != null && it.isNotEmpty() && it.length <= 32 }
 
     val avatarEmoji by stringOption(
-        key = "avatarEmoji",
+        name = "avatarEmoji",
         default = "🎮",
-        title = "Avatar emoji",
         description = "The emoji used as the avatar. Must be a single emoji.",
         required = true,
     ) {
@@ -60,18 +59,23 @@ val bypassLoginPatch = bytecodePatch(
         count == 1
     }
 
-    execute {
+    apply {
         val emoji = avatarEmoji!!
-        getAvatarFingerprint.method.returnEarly(emoji)
-        getNicknameFingerprint.method.returnEarly(nickname!!)
-        getUsernameFingerprint.method.returnEarly(username!!)
-        getUidFingerprint.method.returnEarly(99999)
-        isLoginFingerprint.method.returnEarly(true)
+        firstMethod { definingClass == USER_MANAGER_CLASS && name == "getAvatar" }.returnEarly(emoji)
+        firstMethod { definingClass == USER_MANAGER_CLASS && name == "getNickname" }.returnEarly(nickname!!)
+        firstMethod { definingClass == USER_MANAGER_CLASS && name == "getUsername" }.returnEarly(username!!)
+        firstMethod { definingClass == USER_MANAGER_CLASS && name == "getUid" }.returnEarly(99999)
+        firstMethod { definingClass == USER_MANAGER_CLASS && name == "isLogin" }.returnEarly(true)
 
         // H: HomeLeftMenuDialog — remove the "User Center" menu item from the left drawer.
         // The item is constructed between a new-instance of $MenuItem and a List.add() call,
         // bookmarked by an SGET that loads the menu_user_center_normal drawable id.
-        homeLeftMenuDialogFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/ui/menu/HomeLeftMenuDialog;" &&
+                implementation?.instructions?.any { instr ->
+                    instr.getReference<FieldReference>()?.name == "menu_user_center_normal"
+                } == true
+        }.apply {
             val sgetIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.SGET &&
                     getReference<FieldReference>()?.name == "menu_user_center_normal"
@@ -97,7 +101,10 @@ val bypassLoginPatch = bytecodePatch(
         // H: HomeLeftMenuDialog.l1() — avatar/username header click handler.
         // Strips the Intent creation + startActivity call so tapping the header
         // just dismisses the drawer instead of opening User Center.
-        homeLeftMenuAvatarClickFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lcom/xj/landscape/launcher/ui/menu/HomeLeftMenuDialog;" &&
+                name == "l1"
+        }.apply {
             val startActivityIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_VIRTUAL &&
                     getReference<MethodReference>()?.name == "startActivity"
@@ -113,7 +120,10 @@ val bypassLoginPatch = bytecodePatch(
 
         // Set TokenProvider.loginBypassed = true so the token resolution extension
         // knows to fetch from the token-refresh service instead of using the original token.
-        tokenProviderClinitFingerprint.method.apply {
+        firstMethod {
+            definingClass == "Lapp/revanced/extension/gamehub/token/TokenProvider;" &&
+                name == "<clinit>"
+        }.apply {
             val returnVoidIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.RETURN_VOID }
             addInstructions(
                 returnVoidIndex,
