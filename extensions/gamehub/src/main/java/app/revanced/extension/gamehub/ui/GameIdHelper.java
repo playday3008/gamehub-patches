@@ -9,12 +9,15 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.annotation.SuppressLint;
+
 import app.revanced.extension.gamehub.util.GHLog;
 
 /**
  * Displays copyable game IDs in the game detail screen.
  * Each ID is a separate TextView that copies its value on tap.
  */
+@SuppressLint("DiscouragedApi")
 @SuppressWarnings("unused")
 public class GameIdHelper {
 

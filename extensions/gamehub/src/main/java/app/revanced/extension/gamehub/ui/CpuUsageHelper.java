@@ -8,6 +8,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.util.Locale;
+
+import android.annotation.SuppressLint;
 
 import app.revanced.extension.gamehub.prefs.GameHubPrefs;
 import app.revanced.extension.gamehub.util.DeviceMetrics;
@@ -25,6 +28,7 @@ import app.revanced.extension.gamehub.util.GHLog;
  * <p>BatteryUtil.a() fires infrequently (on battery status changes), so we
  * start a self-refreshing Handler loop on the first call to update every second.
  */
+@SuppressLint("DiscouragedApi")
 @SuppressWarnings("unused")
 public final class CpuUsageHelper {
 
@@ -98,7 +102,7 @@ public final class CpuUsageHelper {
                 return;
             }
 
-            cpuTextView.setText(String.format("CPU: %3d%%", cpuPercent));
+            cpuTextView.setText(String.format(Locale.US, "CPU: %3d%%", cpuPercent));
             cpuTextView.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             GHLog.CPU.w("refreshCpuText failed", e);

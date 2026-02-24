@@ -12,6 +12,8 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
+
 import app.revanced.extension.gamehub.prefs.GameHubPrefs;
 import app.revanced.extension.gamehub.util.DeviceMetrics;
 import app.revanced.extension.gamehub.util.GHLog;
@@ -21,6 +23,7 @@ import app.revanced.extension.gamehub.util.GHLog;
  * game overlay sidebar. Views are programmatically appended to the
  * performanceFl LinearLayout and refreshed every second via a Handler loop.
  */
+@SuppressLint("SetTextI18n")
 @SuppressWarnings("unused")
 public final class PerformanceMetricsHelper {
 

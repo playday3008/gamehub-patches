@@ -4,6 +4,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import android.annotation.SuppressLint;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,6 +15,7 @@ import java.util.List;
  * Replaces the hardcoded currency symbols (¥/￥) with the real currency code
  * from the Steam PICS database (e.g. "Account (USD)", "Game Price (USD)").
  */
+@SuppressLint("SetTextI18n")
 public final class AccountCurrencyHelper {
     private static String sCurrency = null;
     private static final List<WeakReference<TextView>> sPendingAccountLabels = new ArrayList<>();

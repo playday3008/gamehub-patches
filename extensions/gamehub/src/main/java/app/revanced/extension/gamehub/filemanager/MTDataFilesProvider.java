@@ -18,6 +18,8 @@ import android.system.Os;
 import android.system.StructStat;
 import android.webkit.MimeTypeMap;
 
+import android.annotation.SuppressLint;
+
 import app.revanced.extension.gamehub.util.GHLog;
 
 import java.io.File;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 
+@SuppressLint({"SdCardPath", "DiscouragedPrivateApi"})
 @SuppressWarnings("unused")
 public class MTDataFilesProvider extends DocumentsProvider {
     public static final String COLUMN_MT_EXTRAS = "mt_extras";
@@ -355,6 +358,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
         return documentId.startsWith(parentDocumentId);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Bundle call(String method, String arg, Bundle extras) {
         Bundle result = super.call(method, arg, extras);
@@ -366,7 +370,9 @@ public class MTDataFilesProvider extends DocumentsProvider {
         }
         Bundle out = new Bundle();
         try {
-            Uri uri = extras.getParcelable(EXTRA_URI);
+            Uri uri = (android.os.Build.VERSION.SDK_INT >= 33)
+                    ? extras.getParcelable(EXTRA_URI, Uri.class)
+                    : extras.getParcelable(EXTRA_URI);
             List<String> pathSegments = uri.getPathSegments();
             String documentId = pathSegments.size() >= 4
                     ? pathSegments.get(3) : pathSegments.get(1);
@@ -514,7 +520,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
         final String name = file.getName();
         final int lastDot = name.lastIndexOf('.');
         if (lastDot >= 0) {
-            final String extension = name.substring(lastDot + 1).toLowerCase();
+            final String extension = name.substring(lastDot + 1).toLowerCase(java.util.Locale.ROOT);
             final String mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
             if (mime != null) return mime;
         }

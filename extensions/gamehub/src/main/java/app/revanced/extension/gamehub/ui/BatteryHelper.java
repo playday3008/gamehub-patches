@@ -5,12 +5,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import android.annotation.SuppressLint;
+
 import app.revanced.extension.gamehub.util.GHLog;
 
 /**
  * Updates the battery percentage TextView that was injected as a sibling
  * of the battery icon ImageView by the resource patch.
  */
+@SuppressLint({"DiscouragedApi", "SetTextI18n"})
 public final class BatteryHelper {
 
     /**

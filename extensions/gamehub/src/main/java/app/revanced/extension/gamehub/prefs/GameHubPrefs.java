@@ -528,7 +528,7 @@ public class GameHubPrefs {
      */
     private static boolean isTextContentType(String contentType) {
         if (contentType == null) return true; // assume text if unknown
-        String lower = contentType.toLowerCase();
+        String lower = contentType.toLowerCase(java.util.Locale.ROOT);
         return lower.startsWith("text/")
                 || lower.contains("json")
                 || lower.contains("xml")
