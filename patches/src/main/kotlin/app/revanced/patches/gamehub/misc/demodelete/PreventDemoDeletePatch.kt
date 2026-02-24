@@ -1,0 +1,28 @@
+package app.revanced.patches.gamehub.misc.demodelete
+
+import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
+import app.revanced.patcher.patch.bytecodePatch
+import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
+import app.revanced.patches.gamehub.GAMEHUB_VERSION
+
+@Suppress("unused")
+val preventDemoDeletePatch = bytecodePatch(
+    name = "Prevent demo game deletion",
+    description = "Prevents automatic deletion of demo/PC emulator games after a session ends. " +
+        "Manual uninstall from the game detail screen still works.",
+) {
+    compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
+
+    execute {
+        // UninstallGameHelper.uninstallPcDemoGame — suspend function that dispatches a coroutine
+        // to delete game files and reset state. Called automatically by GameDetailVM.refreshDownloadStatusUI
+        // and by the DEMO_AUTO uninstall path. Return kotlin.Unit immediately to prevent deletion.
+        uninstallPcDemoGameFingerprint.method.addInstructions(
+            0,
+            """
+                sget-object v0, Lkotlin/Unit;->a:Lkotlin/Unit;
+                return-object v0
+            """,
+        )
+    }
+}
