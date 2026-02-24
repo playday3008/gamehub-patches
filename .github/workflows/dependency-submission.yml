@@ -26,4 +26,5 @@ jobs:
       - name: Submit dependencies
         uses: gradle/actions/dependency-submission@v5
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          ORG_GRADLE_PROJECT_githubPackagesUsername: ${{ github.actor }}
+          ORG_GRADLE_PROJECT_githubPackagesPassword: ${{ github.token }}
