@@ -77,14 +77,14 @@ val useSteamCdnPatch = bytecodePatch(
         }.apply {
             addInstructionsWithLabels(
                 0,
-                """
-                    invoke-static {p1}, $EXTENSION_STEAM_CDN_HELPER->resolveImageUrl(Ljava/lang/String;)Ljava/lang/String;
+                $$"""
+                    invoke-static {p1}, $${EXTENSION_STEAM_CDN_HELPER}->resolveImageUrl(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :original
                     invoke-static {v0}, Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;
                     move-result-object v0
                     iget-object v1, p0, Lcom/xj/base/sdkconfig/ResizeQueryParamGlideModelLoader;->a:Lcom/bumptech/glide/load/model/ModelLoader;
-                    invoke-interface {v1, v0, p2, p3, p4}, Lcom/bumptech/glide/load/model/ModelLoader;->buildLoadData(Ljava/lang/Object;IILcom/bumptech/glide/load/Options;)Lcom/bumptech/glide/load/model/ModelLoader${'$'}LoadData;
+                    invoke-interface {v1, v0, p2, p3, p4}, Lcom/bumptech/glide/load/model/ModelLoader;->buildLoadData(Ljava/lang/Object;IILcom/bumptech/glide/load/Options;)Lcom/bumptech/glide/load/model/ModelLoader$LoadData;
                     move-result-object v0
                     return-object v0
                 """,

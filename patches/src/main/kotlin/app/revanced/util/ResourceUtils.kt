@@ -78,12 +78,10 @@ fun ResourcePatchContext.copyResources(
         resourceGroup.resources.forEach { resource ->
             val resourceFile = "${resourceGroup.resourceDirectoryName}/$resource"
             val stream = inputStreamFromBundledResource(sourceResourceDirectory, resourceFile)
-            if (stream == null) {
-                throw IllegalArgumentException(
+                ?: throw IllegalArgumentException(
                     "Could not find resource: $resourceFile " +
                         "in directory: $sourceResourceDirectory",
                 )
-            }
             Files.copy(
                 stream,
                 targetResourceDirectory.resolve(resourceFile).toPath(),

@@ -53,16 +53,16 @@ val apiServerSwitchPatch = bytecodePatch(
                     opcode == Opcode.INVOKE_VIRTUAL &&
                         (this as? ReferenceInstruction)?.reference?.let {
                             it is MethodReference && it.name == "newBuilder" &&
-                                it.returnType == "Lokhttp3/Request\$Builder;"
+                                it.returnType == $$"Lokhttp3/Request$Builder;"
                         } == true
                 }
                 val builderReg = getInstruction<OneRegisterInstruction>(newBuilderIndex + 1).registerA
                 addInstructions(
                     newBuilderIndex + 2,
-                    """
-                        invoke-static {v$builderReg}, $STEAM_EXTENSION->addCompatibilityHeaders(Ljava/lang/Object;)Ljava/lang/Object;
-                        move-result-object v$builderReg
-                        check-cast v$builderReg, Lokhttp3/Request${'$'}Builder;
+                    $$"""
+                        invoke-static {v$${builderReg}}, $${STEAM_EXTENSION}->addCompatibilityHeaders(Ljava/lang/Object;)Ljava/lang/Object;
+                        move-result-object v$${builderReg}
+                        check-cast v$${builderReg}, Lokhttp3/Request$Builder;
                     """,
                 )
             }
@@ -73,7 +73,7 @@ val apiServerSwitchPatch = bytecodePatch(
                     implementation?.instructions?.any { instruction ->
                         (instruction as? ReferenceInstruction)?.reference?.let {
                             it is MethodReference && it.name == "newBuilder" &&
-                                it.returnType == "Lokhttp3/Request\$Builder;"
+                                it.returnType == $$"Lokhttp3/Request$Builder;"
                         } == true
                     } == true
             },
@@ -84,7 +84,7 @@ val apiServerSwitchPatch = bytecodePatch(
                     implementation?.instructions?.any { instruction ->
                         (instruction as? ReferenceInstruction)?.reference?.let {
                             it is MethodReference && it.name == "newBuilder" &&
-                                it.returnType == "Lokhttp3/Request\$Builder;"
+                                it.returnType == $$"Lokhttp3/Request$Builder;"
                         } == true
                     } == true
             },
@@ -268,7 +268,7 @@ val apiServerSwitchPatch = bytecodePatch(
             definingClass == "Lcom/xj/common/http/interceptor/TokenRefreshInterceptor;" &&
                 name == "intercept" &&
                 returnType == "Lokhttp3/Response;" &&
-                parameterTypes == listOf("Lokhttp3/Interceptor\$Chain;")
+                parameterTypes == listOf($$"Lokhttp3/Interceptor$Chain;")
         }.apply {
             val theRouterCallIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.INVOKE_STATIC &&

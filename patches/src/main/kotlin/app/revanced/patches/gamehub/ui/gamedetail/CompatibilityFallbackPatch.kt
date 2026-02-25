@@ -39,7 +39,7 @@ val compatibilityFallbackPatch = bytecodePatch(
                 name == "h" &&
                 parameterTypes.size == 2 &&
                 parameterTypes[0] == "Lcom/xj/common/bean/SteamGame;" &&
-                parameterTypes[1] == "Lcom/xj/game/ui/vm/handler/SteamGameDataHandler\$GameContext;"
+                parameterTypes[1] == $$"Lcom/xj/game/ui/vm/handler/SteamGameDataHandler$GameContext;"
         }.apply {
             val checkCastIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.CHECK_CAST &&

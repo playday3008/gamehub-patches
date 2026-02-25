@@ -28,7 +28,7 @@ internal val bypassTokenExpiryPatch = bytecodePatch {
         // The two const pre-loads set up registers that the DeviceManager block
         // expects to find initialised (v4 = null BooleanRef guard, v3 = FLAG_ACTIVITY_NEW_TASK).
         firstMethod {
-            definingClass == "Lcom/xj/landscape/launcher/router/RouterUtils${'$'}checkGuideStep${'$'}1;" &&
+            definingClass == $$"Lcom/xj/landscape/launcher/router/RouterUtils$checkGuideStep$1;" &&
                 name == "invokeSuspend"
         }.apply {
             val logCallIndex = indexOfFirstInstructionOrThrow {

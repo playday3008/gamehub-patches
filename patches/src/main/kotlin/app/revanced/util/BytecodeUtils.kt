@@ -114,7 +114,7 @@ fun Method.findFreeRegister(
             // In practice this never occurs.
             throw IllegalArgumentException(
                 "Could not find a free register from startIndex: " +
-                    "$startIndex excluding: $registersToExclude",
+                    "$startIndex excluding: ${registersToExclude.toList()}",
             )
         }
     }

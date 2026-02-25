@@ -12,7 +12,7 @@ internal val errorHandlingPatch = bytecodePatch {
         // NetErrorHandler$DefaultImpls — insert return-void before goto/16 so error callbacks
         // are silenced. The goto jumps to a logging/dialog path; skipping it avoids error popups.
         firstMethod {
-            definingClass == "Lcom/drake/net/interfaces/NetErrorHandler${'$'}DefaultImpls;" &&
+            definingClass == $$"Lcom/drake/net/interfaces/NetErrorHandler$DefaultImpls;" &&
                 implementation?.instructions?.any { it.opcode == Opcode.GOTO_16 } == true
         }.apply {
             val gotoIndex = indexOfFirstInstructionOrThrow { opcode == Opcode.GOTO_16 }

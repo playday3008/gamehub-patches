@@ -65,8 +65,8 @@ val sdCardStoragePatch = bytecodePatch(
         // DownloadGameSizeInfoDialog$computeAvailableSize$2.invokeSuspend returns Object (boxed Long).
         // Override to return available bytes on the effective storage location (SD card or internal).
         firstMethod {
-            definingClass == "Lcom/xj/landscape/launcher/ui/dialog/" +
-                "DownloadGameSizeInfoDialog\$computeAvailableSize\$2;" &&
+            definingClass ==
+                $$"Lcom/xj/landscape/launcher/ui/dialog/DownloadGameSizeInfoDialog$computeAvailableSize$2;" &&
                 implementation?.instructions?.any { instr ->
                     instr.getReference<MethodReference>()?.name == "getExternalStorageDirectory"
                 } == true

@@ -36,14 +36,14 @@ val bypassLoginPatch = bytecodePatch(
         default = "GHLite",
         description = "The username shown in the app profile. Maximum 8 characters.",
         required = true,
-    ) { it != null && it.isNotEmpty() && it.length <= 8 }
+    ) { !it.isNullOrEmpty() && it.length <= 8 }
 
     val nickname by stringOption(
         name = "nickname",
         default = "GameHub Lite",
         description = "The display nickname shown in the app. Maximum 32 characters.",
         required = true,
-    ) { it != null && it.isNotEmpty() && it.length <= 32 }
+    ) { !it.isNullOrEmpty() && it.length <= 32 }
 
     val avatarEmoji by stringOption(
         name = "avatarEmoji",
