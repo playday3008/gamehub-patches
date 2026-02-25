@@ -15,16 +15,20 @@ class ArrayResource(
     name: String,
     val items: List<String>,
 ) : BaseResource(name, "string-array") {
-    override fun serialize(ownerDocument: Document, resourceCallback: (BaseResource) -> Unit) =
-        super.serialize(ownerDocument, resourceCallback).apply {
-            setAttribute("name", name)
+    override fun serialize(
+        ownerDocument: Document,
+        resourceCallback: (BaseResource) -> Unit,
+    ) = super.serialize(ownerDocument, resourceCallback).apply {
+        setAttribute("name", name)
 
-            items.forEach { item ->
-                appendChild(ownerDocument.createElement("item").also { itemNode ->
+        items.forEach { item ->
+            appendChild(
+                ownerDocument.createElement("item").also { itemNode ->
                     itemNode.textContent = item
-                })
-            }
+                },
+            )
         }
+    }
 
     companion object {
         fun fromNode(node: Node): ArrayResource {

@@ -20,10 +20,14 @@ public enum GHLog {
     private static final String PREFIX = "GHL/";
     private final String tag;
 
+    // spotless:off
+
     GHLog(String tag) { this.tag = PREFIX + tag; }
 
     public void d(String msg) { Log.d(tag, msg); }
     public void w(String msg) { Log.w(tag, msg); }
     public void w(String msg, Throwable t) { Log.w(tag, msg, t); }
     public void e(String msg, Throwable t) { Log.e(tag, msg, t); }
+
+    // spotless:on
 }

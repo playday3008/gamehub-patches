@@ -1,10 +1,9 @@
 package app.revanced.extension.gamehub.ui;
 
+import android.annotation.SuppressLint;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import android.annotation.SuppressLint;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

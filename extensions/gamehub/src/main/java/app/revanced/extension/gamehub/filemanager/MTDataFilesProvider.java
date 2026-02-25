@@ -1,5 +1,6 @@
 package app.revanced.extension.gamehub.filemanager;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ProviderInfo;
@@ -17,8 +18,6 @@ import android.system.ErrnoException;
 import android.system.Os;
 import android.system.StructStat;
 import android.webkit.MimeTypeMap;
-
-import android.annotation.SuppressLint;
 
 import app.revanced.extension.gamehub.util.GHLog;
 
@@ -68,24 +67,24 @@ public class MTDataFilesProvider extends DocumentsProvider {
     @SuppressWarnings("OctalInteger")
     private static final int S_IFLNK = 0120000;
 
-    private static final String[] DEFAULT_ROOT_PROJECTION = new String[]{
-            Root.COLUMN_ROOT_ID,
-            Root.COLUMN_MIME_TYPES,
-            Root.COLUMN_FLAGS,
-            Root.COLUMN_ICON,
-            Root.COLUMN_TITLE,
-            Root.COLUMN_SUMMARY,
-            Root.COLUMN_DOCUMENT_ID,
+    private static final String[] DEFAULT_ROOT_PROJECTION = new String[] {
+        Root.COLUMN_ROOT_ID,
+        Root.COLUMN_MIME_TYPES,
+        Root.COLUMN_FLAGS,
+        Root.COLUMN_ICON,
+        Root.COLUMN_TITLE,
+        Root.COLUMN_SUMMARY,
+        Root.COLUMN_DOCUMENT_ID,
     };
 
-    private static final String[] DEFAULT_DOCUMENT_PROJECTION = new String[]{
-            Document.COLUMN_DOCUMENT_ID,
-            Document.COLUMN_MIME_TYPE,
-            Document.COLUMN_DISPLAY_NAME,
-            Document.COLUMN_LAST_MODIFIED,
-            Document.COLUMN_FLAGS,
-            Document.COLUMN_SIZE,
-            COLUMN_MT_EXTRAS,
+    private static final String[] DEFAULT_DOCUMENT_PROJECTION = new String[] {
+        Document.COLUMN_DOCUMENT_ID,
+        Document.COLUMN_MIME_TYPE,
+        Document.COLUMN_DISPLAY_NAME,
+        Document.COLUMN_LAST_MODIFIED,
+        Document.COLUMN_FLAGS,
+        Document.COLUMN_SIZE,
+        COLUMN_MT_EXTRAS,
     };
 
     private String authority;
@@ -109,18 +108,18 @@ public class MTDataFilesProvider extends DocumentsProvider {
         // MT Manager. Clear ContentProvider's internal permission fields so any
         // app can query this provider without going through the system picker.
         try {
-            Field readPerm = android.content.ContentProvider.class
-                    .getDeclaredField("mReadPermission");
+            Field readPerm = android.content.ContentProvider.class.getDeclaredField("mReadPermission");
             readPerm.setAccessible(true);
             readPerm.set(this, null);
 
-            Field writePerm = android.content.ContentProvider.class
-                    .getDeclaredField("mWritePermission");
+            Field writePerm = android.content.ContentProvider.class.getDeclaredField("mWritePermission");
             writePerm.setAccessible(true);
             writePerm.set(this, null);
         } catch (ReflectiveOperationException e) {
-            GHLog.FILE_MGR.w("Could not clear MANAGE_DOCUMENTS enforcement; "
-                    + "direct access from file managers may require SAF", e);
+            GHLog.FILE_MGR.w(
+                    "Could not clear MANAGE_DOCUMENTS enforcement; "
+                            + "direct access from file managers may require SAF",
+                    e);
         }
 
         authority = info.authority;
@@ -128,8 +127,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
         dataDir = context.getFilesDir().getParentFile();
         String dataDirPath = dataDir.getPath();
         if (dataDirPath.startsWith(DATA_USER_PREFIX)) {
-            userDeDataDir = new File(DATA_USER_DE_PREFIX
-                    + dataDirPath.substring(DATA_USER_PREFIX.length()));
+            userDeDataDir = new File(DATA_USER_DE_PREFIX + dataDirPath.substring(DATA_USER_PREFIX.length()));
         }
         File externalFilesDir = context.getExternalFilesDir(null);
         if (externalFilesDir != null) {
@@ -197,10 +195,9 @@ public class MTDataFilesProvider extends DocumentsProvider {
     @Override
     public Cursor queryRoots(String[] projection) {
         final ApplicationInfo applicationInfo = getContext().getApplicationInfo();
-        final String applicationName = applicationInfo.loadLabel(
-                getContext().getPackageManager()).toString();
-        final MatrixCursor result = new MatrixCursor(
-                projection != null ? projection : DEFAULT_ROOT_PROJECTION);
+        final String applicationName =
+                applicationInfo.loadLabel(getContext().getPackageManager()).toString();
+        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_ROOT_PROJECTION);
         final MatrixCursor.RowBuilder row = result.newRow();
         row.add(Root.COLUMN_ROOT_ID, packageName);
         row.add(Root.COLUMN_DOCUMENT_ID, packageName);
@@ -213,23 +210,21 @@ public class MTDataFilesProvider extends DocumentsProvider {
     }
 
     @Override
-    public Cursor queryDocument(String documentId, String[] projection)
-            throws FileNotFoundException {
-        final MatrixCursor result = new MatrixCursor(
-                projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+    public Cursor queryDocument(String documentId, String[] projection) throws FileNotFoundException {
+        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
         includeFile(result, documentId, null);
         return result;
     }
 
     @Override
-    public Cursor queryChildDocuments(String parentDocumentId, String[] projection,
-            String sortOrder) throws FileNotFoundException {
+    public Cursor queryChildDocuments(String parentDocumentId, String[] projection, String sortOrder)
+            throws FileNotFoundException {
         if (parentDocumentId.endsWith("/")) {
             parentDocumentId = parentDocumentId.substring(0, parentDocumentId.length() - 1);
         }
-        final MatrixCursor result = new MatrixCursor(
-                projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
-        result.setNotificationUri(getContext().getContentResolver(),
+        final MatrixCursor result = new MatrixCursor(projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION);
+        result.setNotificationUri(
+                getContext().getContentResolver(),
                 DocumentsContract.buildChildDocumentsUri(authority, parentDocumentId));
         final File parent = getFileForDocId(parentDocumentId);
         if (parent == null) {
@@ -255,8 +250,8 @@ public class MTDataFilesProvider extends DocumentsProvider {
     }
 
     @Override
-    public ParcelFileDescriptor openDocument(String documentId, String mode,
-            CancellationSignal signal) throws FileNotFoundException {
+    public ParcelFileDescriptor openDocument(String documentId, String mode, CancellationSignal signal)
+            throws FileNotFoundException {
         final File file = getFileForDocId(documentId, false);
         if (file == null) {
             throw new FileNotFoundException(documentId + " not found");
@@ -306,14 +301,12 @@ public class MTDataFilesProvider extends DocumentsProvider {
     }
 
     @Override
-    public void removeDocument(String documentId, String parentDocumentId)
-            throws FileNotFoundException {
+    public void removeDocument(String documentId, String parentDocumentId) throws FileNotFoundException {
         deleteDocument(documentId);
     }
 
     @Override
-    public String renameDocument(String documentId, String displayName)
-            throws FileNotFoundException {
+    public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
         File file = getFileForDocId(documentId);
         if (file != null) {
             File target = new File(file.getParentFile(), displayName);
@@ -324,13 +317,12 @@ public class MTDataFilesProvider extends DocumentsProvider {
                 return parentDocId + "/" + displayName;
             }
         }
-        throw new FileNotFoundException(
-                "Failed to rename document " + documentId + " to " + displayName);
+        throw new FileNotFoundException("Failed to rename document " + documentId + " to " + displayName);
     }
 
     @Override
-    public String moveDocument(String sourceDocumentId, String sourceParentDocumentId,
-            String targetParentDocumentId) throws FileNotFoundException {
+    public String moveDocument(String sourceDocumentId, String sourceParentDocumentId, String targetParentDocumentId)
+            throws FileNotFoundException {
         File sourceFile = getFileForDocId(sourceDocumentId);
         File targetDir = getFileForDocId(targetParentDocumentId);
         if (sourceFile != null && targetDir != null) {
@@ -374,8 +366,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
                     ? extras.getParcelable(EXTRA_URI, Uri.class)
                     : extras.getParcelable(EXTRA_URI);
             List<String> pathSegments = uri.getPathSegments();
-            String documentId = pathSegments.size() >= 4
-                    ? pathSegments.get(3) : pathSegments.get(1);
+            String documentId = pathSegments.size() >= 4 ? pathSegments.get(3) : pathSegments.get(1);
             switch (method) {
                 case METHOD_SET_LAST_MODIFIED: {
                     File file = getFileForDocId(documentId);
@@ -441,8 +432,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
         return slash > 0 ? docId.substring(0, slash) : docId;
     }
 
-    private void includeFile(MatrixCursor result, String docId, File file)
-            throws FileNotFoundException {
+    private void includeFile(MatrixCursor result, String docId, File file) throws FileNotFoundException {
         if (file == null) {
             file = getFileForDocId(docId);
         }
@@ -501,8 +491,10 @@ public class MTDataFilesProvider extends DocumentsProvider {
                 StringBuilder sb = new StringBuilder();
                 StructStat stat = Os.lstat(path);
                 sb.append(stat.st_mode)
-                        .append("|").append(stat.st_uid)
-                        .append("|").append(stat.st_gid);
+                        .append("|")
+                        .append(stat.st_uid)
+                        .append("|")
+                        .append(stat.st_gid);
                 if ((stat.st_mode & S_IFMT) == S_IFLNK) {
                     sb.append("|").append(Os.readlink(path));
                 }

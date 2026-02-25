@@ -3,9 +3,9 @@ package app.revanced.patches.gamehub.ui.search
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
-import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
 @Suppress("unused")
 val hideHotSearchesPatch = bytecodePatch(

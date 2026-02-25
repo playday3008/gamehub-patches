@@ -19,7 +19,9 @@ private val gameIdLayoutPatch = resourcePatch {
         // Register resource IDs so getIdentifier() can resolve them at runtime
         document("res/values/ids.xml").use { dom ->
             val root = dom.documentElement
-            val existingIds = dom.getElementsByTagName("item").asSequence()
+            val existingIds = dom
+                .getElementsByTagName("item")
+                .asSequence()
                 .map { (it as Element).getAttribute("name") }
                 .toSet()
 
@@ -31,10 +33,12 @@ private val gameIdLayoutPatch = resourcePatch {
 
             for (id in newIds) {
                 if (id !in existingIds) {
-                    dom.createElement("item").apply {
-                        setAttribute("name", id)
-                        setAttribute("type", "id")
-                    }.let(root::appendChild)
+                    dom
+                        .createElement("item")
+                        .apply {
+                            setAttribute("name", id)
+                            setAttribute("type", "id")
+                        }.let(root::appendChild)
                 }
             }
         }
@@ -45,7 +49,9 @@ private val gameIdLayoutPatch = resourcePatch {
                 val root = dom.documentElement
 
                 // Check if already present
-                val existing = dom.getElementsByTagName("*").asSequence()
+                val existing = dom
+                    .getElementsByTagName("*")
+                    .asSequence()
                     .any { (it as Element).getAttribute("android:id")?.contains("ll_game_id_container") == true }
                 if (existing) return@apply
 
@@ -62,28 +68,32 @@ private val gameIdLayoutPatch = resourcePatch {
                     setAttribute("app:layout_constraintTop_toBottomOf", "@id/topBarView")
 
                     // Steam App ID (tap to copy)
-                    dom.createElement("TextView").apply {
-                        setAttribute("android:id", "@id/tv_steam_app_id")
-                        setAttribute("android:layout_width", "wrap_content")
-                        setAttribute("android:layout_height", "wrap_content")
-                        setAttribute("android:textSize", "@dimen/mw_12sp")
-                        setAttribute("android:textColor", "#ffffffff")
-                        setAttribute("android:visibility", "gone")
-                        setAttribute("android:focusable", "true")
-                        setAttribute("android:clickable", "true")
-                    }.let(this::appendChild)
+                    dom
+                        .createElement("TextView")
+                        .apply {
+                            setAttribute("android:id", "@id/tv_steam_app_id")
+                            setAttribute("android:layout_width", "wrap_content")
+                            setAttribute("android:layout_height", "wrap_content")
+                            setAttribute("android:textSize", "@dimen/mw_12sp")
+                            setAttribute("android:textColor", "#ffffffff")
+                            setAttribute("android:visibility", "gone")
+                            setAttribute("android:focusable", "true")
+                            setAttribute("android:clickable", "true")
+                        }.let(this::appendChild)
 
                     // Local Game ID (tap to copy)
-                    dom.createElement("TextView").apply {
-                        setAttribute("android:id", "@id/tv_local_game_id")
-                        setAttribute("android:layout_width", "wrap_content")
-                        setAttribute("android:layout_height", "wrap_content")
-                        setAttribute("android:textSize", "@dimen/mw_12sp")
-                        setAttribute("android:textColor", "#ffffffff")
-                        setAttribute("android:visibility", "gone")
-                        setAttribute("android:focusable", "true")
-                        setAttribute("android:clickable", "true")
-                    }.let(this::appendChild)
+                    dom
+                        .createElement("TextView")
+                        .apply {
+                            setAttribute("android:id", "@id/tv_local_game_id")
+                            setAttribute("android:layout_width", "wrap_content")
+                            setAttribute("android:layout_height", "wrap_content")
+                            setAttribute("android:textSize", "@dimen/mw_12sp")
+                            setAttribute("android:textColor", "#ffffffff")
+                            setAttribute("android:visibility", "gone")
+                            setAttribute("android:focusable", "true")
+                            setAttribute("android:clickable", "true")
+                        }.let(this::appendChild)
                 }
 
                 // Insert before the include_skeleton
@@ -97,7 +107,8 @@ private val gameIdLayoutPatch = resourcePatch {
                     root.appendChild(container)
                 }
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 }
 
@@ -117,7 +128,10 @@ val gameIdDisplayPatch = bytecodePatch(
                 name == "onCreate"
         }.apply {
             val returnIndex = implementation!!.instructions.size - 1
-            replaceInstruction(returnIndex, "invoke-static {p0}, $EXTENSION_CLASS->populateGameId(Landroid/app/Activity;)V")
+            replaceInstruction(
+                returnIndex,
+                "invoke-static {p0}, $EXTENSION_CLASS->populateGameId(Landroid/app/Activity;)V",
+            )
             addInstruction(returnIndex + 1, "return-void")
         }
     }

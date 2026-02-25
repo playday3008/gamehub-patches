@@ -37,7 +37,8 @@ val disableOtaUpdatesPatch = bytecodePatch(
         firstMethod("https://www.xiaoji.com/firmware/update/x1/").apply {
             val urlIndex = indexOfFirstInstructionOrThrow {
                 (this as? com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction)
-                    ?.reference?.let { it is StringReference && it.string.startsWith("https://www.xiaoji.com") } == true
+                    ?.reference
+                    ?.let { it is StringReference && it.string.startsWith("https://www.xiaoji.com") } == true
             }
             // Override the URL string with empty string so OTA calls fail silently
             addInstruction(urlIndex + 1, "const-string p1, \"http://127.0.0.1\"")

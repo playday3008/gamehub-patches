@@ -73,10 +73,7 @@ public class PlaytimeHelper {
                 return -1;
             }
             db = SQLiteDatabase.openDatabase(dbFile.getPath(), null, SQLiteDatabase.OPEN_READONLY);
-            cursor = db.rawQuery(
-                    "SELECT id FROM steam_account WHERE is_current_user = 1 LIMIT 1",
-                    null
-            );
+            cursor = db.rawQuery("SELECT id FROM steam_account WHERE is_current_user = 1 LIMIT 1", null);
             if (cursor.moveToFirst()) {
                 return cursor.getLong(0);
             }
@@ -106,12 +103,13 @@ public class PlaytimeHelper {
             }
             db = SQLiteDatabase.openDatabase(dbFile.getPath(), null, SQLiteDatabase.OPEN_READONLY);
             cursor = db.rawQuery(
+                    // spotless:off
                     "SELECT app_id, playtime_forever, playtime2weeks " +
                             "FROM t_steam_user_pics_app_last_played_times " +
                             "WHERE user_id = ? AND playtime_forever > 0 " +
                             "ORDER BY playtime2weeks DESC, playtime_forever DESC",
-                    new String[]{String.valueOf(userId)}
-            );
+                    // spotless:on
+                    new String[] {String.valueOf(userId)});
 
             ensureReflection();
 

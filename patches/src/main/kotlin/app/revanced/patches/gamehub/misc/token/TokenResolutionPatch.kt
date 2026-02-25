@@ -35,9 +35,10 @@ internal val tokenResolutionPatch = bytecodePatch {
 
             // Collect return-object indices in descending order so insertions don't shift
             // earlier indices.
-            val returnIndices = instructions.mapIndexedNotNull { index, instruction ->
-                if (instruction.opcode == Opcode.RETURN_OBJECT) index else null
-            }.sortedDescending()
+            val returnIndices = instructions
+                .mapIndexedNotNull { index, instruction ->
+                    if (instruction.opcode == Opcode.RETURN_OBJECT) index else null
+                }.sortedDescending()
 
             for (returnIndex in returnIndices) {
                 val returnReg = getInstruction<OneRegisterInstruction>(returnIndex).registerA

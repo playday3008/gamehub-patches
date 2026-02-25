@@ -1,5 +1,6 @@
 package app.revanced.extension.gamehub.ui;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -7,14 +8,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
-import java.util.Locale;
-
-import android.annotation.SuppressLint;
-
 import app.revanced.extension.gamehub.prefs.GameHubPrefs;
 import app.revanced.extension.gamehub.util.DeviceMetrics;
 import app.revanced.extension.gamehub.util.GHLog;
+
+import java.lang.ref.WeakReference;
+import java.util.Locale;
 
 /**
  * Uses {@link android.os.Process#getElapsedCpuTime()} to compute app CPU usage
@@ -51,8 +50,12 @@ public final class CpuUsageHelper {
             ViewGroup parent = (ViewGroup) batteryImageView.getParent();
             if (parent == null) return;
 
-            int tvId = batteryImageView.getResources().getIdentifier(
-                    "tv_cpu_percent", "id", batteryImageView.getContext().getPackageName());
+            int tvId = batteryImageView
+                    .getResources()
+                    .getIdentifier(
+                            "tv_cpu_percent",
+                            "id",
+                            batteryImageView.getContext().getPackageName());
             if (tvId == 0) return;
 
             View tv = parent.findViewById(tvId);
@@ -108,5 +111,4 @@ public final class CpuUsageHelper {
             GHLog.CPU.w("refreshCpuText failed", e);
         }
     }
-
 }

@@ -12,24 +12,30 @@ import org.w3c.dom.Node
 private val manifestCleanupResourcePatch = resourcePatch {
     apply {
         // Remove unused assets.
-        //delete("assets/NotoColorEmojiCompat.ttf")
-        //delete("assets/auth_intro_timberline.webm")
-        //delete("assets/auth_loop_timberline.webm")
-        //delete("assets/better-xcloud.user.js")
-        //delete("assets/splash_video.mp4")
+        // delete("assets/NotoColorEmojiCompat.ttf")
+        // delete("assets/auth_intro_timberline.webm")
+        // delete("assets/auth_loop_timberline.webm")
+        // delete("assets/better-xcloud.user.js")
+        // delete("assets/splash_video.mp4")
         delete("assets/libwbsafeedit")
         delete("assets/libwbsafeedit_arm64-v8a")
         delete("assets/libwbsafeedit_armeabi")
         delete("assets/libwbsafeedit_armeabi-v7a")
-        //delete("assets/h5_qr_back.png")
+        // delete("assets/h5_qr_back.png")
 
         document("AndroidManifest.xml").use { dom ->
-            fun removeByName(vararg tags: String, predicate: (String) -> Boolean) {
-                tags.flatMap { tag ->
-                    dom.getElementsByTagName(tag).asSequence()
-                        .filter { predicate(it.attributes.getNamedItem("android:name")?.nodeValue ?: "") }
-                        .toList()
-                }.forEach { it.parentNode?.removeChild(it) }
+            fun removeByName(
+                vararg tags: String,
+                predicate: (String) -> Boolean,
+            ) {
+                tags
+                    .flatMap { tag ->
+                        dom
+                            .getElementsByTagName(tag)
+                            .asSequence()
+                            .filter { predicate(it.attributes.getNamedItem("android:name")?.nodeValue ?: "") }
+                            .toList()
+                    }.forEach { it.parentNode?.removeChild(it) }
             }
 
             // Remove unnecessary permissions.
@@ -40,13 +46,13 @@ private val manifestCleanupResourcePatch = resourcePatch {
                 it in setOf(
                     "android.permission.REQUEST_INSTALL_PACKAGES",
                     // Apps/Packages querying are used for launching other apps/games from GameHub
-                    //"android.permission.REQUEST_INSTALL_PACKAGES",
-                    //"android.permission.GET_INSTALLED_APPS",
-                    //"android.permission.QUERY_ALL_PACKAGES",
+                    // "android.permission.REQUEST_INSTALL_PACKAGES",
+                    // "android.permission.GET_INSTALLED_APPS",
+                    // "android.permission.QUERY_ALL_PACKAGES",
                     // Keep ACCESS_COARSE_LOCATION, ACCESS_FINE_LOCATION, and BLUETOOTH_ADVERTISE:
                     // needed by RequestBlePermissionDialogFragment for controller pairing via BLE.
-                    //"android.permission.ACCESS_COARSE_LOCATION",
-                    //"android.permission.ACCESS_FINE_LOCATION",
+                    // "android.permission.ACCESS_COARSE_LOCATION",
+                    // "android.permission.ACCESS_FINE_LOCATION",
                     "android.permission.ACCESS_BACKGROUND_LOCATION",
                     "android.permission.READ_CONTACTS",
                     "android.permission.READ_PHONE_STATE",
@@ -60,8 +66,8 @@ private val manifestCleanupResourcePatch = resourcePatch {
                     "com.android.launcher.permission.READ_SETTINGS",
                     "com.android.launcher.permission.WRITE_SETTINGS",
                     // Keep CAMERA + FLASHLIGHT: needed by PcStreamQRCodeScanActivity for QR code scanning.
-                    //"android.permission.CAMERA",
-                    //"android.permission.FLASHLIGHT",
+                    // "android.permission.CAMERA",
+                    // "android.permission.FLASHLIGHT",
                     "com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE",
                     "com.google.android.providers.gsf.permission.READ_GSERVICES",
                     "android.permission.EXPAND_STATUS_BAR",
@@ -80,7 +86,7 @@ private val manifestCleanupResourcePatch = resourcePatch {
                     it.startsWith("com.mobile.auth.gatewayauth") ||
                     it.startsWith("androidx.profileinstaller") ||
                     // Keep androidx.camera.core: needed by QR code scanner (CameraX).
-                    //it.startsWith("androidx.camera.core") ||
+                    // it.startsWith("androidx.camera.core") ||
                     it.contains("WXEntryActivity") ||
                     it.contains("WXPayEntryActivity") ||
                     // Luck Picture library location foreground service
@@ -89,21 +95,33 @@ private val manifestCleanupResourcePatch = resourcePatch {
 
             // Remove query package/intent elements for Tencent, Alipay, tbopen
             dom.getElementsByTagName("queries").asSequence().forEach { queriesNode ->
-                queriesNode.childNodes.asSequence()
+                queriesNode.childNodes
+                    .asSequence()
                     .filter { it.nodeType == Node.ELEMENT_NODE }
                     .filter { child ->
                         val el = child as Element
                         // <package android:name="...">
                         val pkgName = el.attributes.getNamedItem("android:name")?.nodeValue ?: ""
-                        if (pkgName.startsWith("com.tencent.") || pkgName.startsWith("com.eg.android.")) return@filter true
+                        if (pkgName.startsWith("com.tencent.") ||
+                            pkgName.startsWith("com.eg.android.")
+                        ) {
+                            return@filter true
+                        }
                         // <intent> with <data android:scheme="tbopen">
                         val dataNodes = el.getElementsByTagName("data")
                         for (i in 0 until dataNodes.length) {
-                            if (dataNodes.item(i).attributes?.getNamedItem("android:scheme")?.nodeValue == "tbopen") return@filter true
+                            if (dataNodes
+                                    .item(i)
+                                    .attributes
+                                    ?.getNamedItem("android:scheme")
+                                    ?.nodeValue ==
+                                "tbopen"
+                            ) {
+                                return@filter true
+                            }
                         }
                         false
-                    }
-                    .toList()
+                    }.toList()
                     .forEach { it.parentNode?.removeChild(it) }
             }
 
@@ -130,49 +148,63 @@ private val manifestCleanupResourcePatch = resourcePatch {
             appNode.setAttribute("android:appCategory", "game")
 
             // Configure specific activities
-            dom.getElementsByTagName("activity").asSequence()
+            dom
+                .getElementsByTagName("activity")
+                .asSequence()
                 .map { it as Element }
                 .forEach { activity ->
                     val name = activity.getAttribute("android:name")
                     when {
                         name.contains("GameDetailActivity") -> {
                             activity.setAttribute("android:exported", "true")
-                            dom.createElement("intent-filter").apply {
-                                dom.createElement("action").apply {
-                                    setAttribute("android:name", "gamehub.lite.LAUNCH_GAME")
-                                }.let(this::appendChild)
-                                dom.createElement("category").apply {
-                                    setAttribute("android:name", "android.intent.category.DEFAULT")
-                                }.let(this::appendChild)
-                            }.let(activity::appendChild)
+                            dom
+                                .createElement("intent-filter")
+                                .apply {
+                                    dom
+                                        .createElement("action")
+                                        .apply {
+                                            setAttribute("android:name", "gamehub.lite.LAUNCH_GAME")
+                                        }.let(this::appendChild)
+                                    dom
+                                        .createElement("category")
+                                        .apply {
+                                            setAttribute("android:name", "android.intent.category.DEFAULT")
+                                        }.let(this::appendChild)
+                                }.let(activity::appendChild)
                         }
+
                         name.contains("WineActivity") -> {
                             activity.setAttribute("android:preferMinimalPostProcessing", "true")
                             activity.setAttribute("android:enableOnBackInvokedCallback", "false")
                             activity.setAttribute("android:resizeableActivity", "false")
                             // Add NVIDIA meta-data
-                            dom.createElement("meta-data").apply {
-                                setAttribute("android:name", "com.nvidia.immediateInput")
-                                setAttribute("android:value", "true")
-                            }.let(activity::appendChild)
-                            dom.createElement("meta-data").apply {
-                                setAttribute("android:name", "com.nvidia.rawCursorInput")
-                                setAttribute("android:value", "true")
-                            }.let(activity::appendChild)
+                            dom
+                                .createElement("meta-data")
+                                .apply {
+                                    setAttribute("android:name", "com.nvidia.immediateInput")
+                                    setAttribute("android:value", "true")
+                                }.let(activity::appendChild)
+                            dom
+                                .createElement("meta-data")
+                                .apply {
+                                    setAttribute("android:name", "com.nvidia.rawCursorInput")
+                                    setAttribute("android:value", "true")
+                                }.let(activity::appendChild)
                         }
                     }
                 }
 
             // Remove foregroundServiceType from specific services
-            dom.getElementsByTagName("service").asSequence()
+            dom
+                .getElementsByTagName("service")
+                .asSequence()
                 .map { it as Element }
                 .filter { service ->
                     val name = service.getAttribute("android:name")
                     name.contains("DeviceManagementService") ||
                         name.contains("MappingService") ||
                         name.contains("SteamService")
-                }
-                .forEach { it.removeAttribute("android:foregroundServiceType") }
+                }.forEach { it.removeAttribute("android:foregroundServiceType") }
         }
 
         // Enable performance game mode so Android's Game Mode API (and Samsung Game Booster)
@@ -202,10 +234,12 @@ val manifestCleanupPatch = bytecodePatch(
         // Keep com/tencent/mmkv — MMKV is used by App.onCreate for key-value storage.
         classDefs.removeIf { classDef ->
             val type = classDef.type
-            (type.startsWith("Lcom/tencent/") &&
-                !type.startsWith("Lcom/tencent/mmkv/") &&
-                !type.startsWith("Lcom/tencent/vasdolly/") &&
-                !type.startsWith("Lcom/tencent/tpgbox/")) ||
+            (
+                type.startsWith("Lcom/tencent/") &&
+                    !type.startsWith("Lcom/tencent/mmkv/") &&
+                    !type.startsWith("Lcom/tencent/vasdolly/") &&
+                    !type.startsWith("Lcom/tencent/tpgbox/")
+            ) ||
                 type.startsWith("Lcom/alipay/") ||
                 type.startsWith("Lcom/mobile/auth/")
         }

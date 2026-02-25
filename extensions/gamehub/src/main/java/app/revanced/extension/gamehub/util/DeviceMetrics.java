@@ -155,7 +155,7 @@ public final class DeviceMetrics {
             File[] children = platform.listFiles();
             if (children != null) {
                 for (File child : children) {
-                    for (String name : new String[]{"utilisation", "utilization"}) {
+                    for (String name : new String[] {"utilisation", "utilization"}) {
                         File util = new File(child, "gpu/" + name);
                         if (util.canRead()) {
                             gpuSysfsPath = util.getAbsolutePath();

@@ -1,5 +1,7 @@
 package app.revanced.patches.gamehub.misc.settings
 
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.addInstructionsWithLabels
 import app.revanced.patcher.extensions.getInstruction
@@ -8,9 +10,6 @@ import app.revanced.patcher.firstClassDef
 import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.BytecodePatchContext
 import app.revanced.patcher.patch.bytecodePatch
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef as MutableClass
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableField.Companion.toMutable
-import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
@@ -23,6 +22,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableIntEncodedValue
+import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableClassDef as MutableClass
 
 private const val ENTITY_CLASS = "Lcom/xj/landscape/launcher/data/model/entity/SettingItemEntity;"
 private const val VIEW_MODEL_CLASS = "Lcom/xj/landscape/launcher/vm/SettingItemViewModel;"
@@ -170,7 +170,10 @@ internal val settingsMenuPatch = bytecodePatch {
  * @param fieldName    The static field name to add to SettingItemEntity (e.g. "CONTENT_TYPE_SD_CARD_STORAGE").
  */
 context(_: BytecodePatchContext)
-internal fun addSteamSetting(contentType: Int, fieldName: String) {
+internal fun addSteamSetting(
+    contentType: Int,
+    fieldName: String,
+) {
     val hexType = "0x${contentType.toString(16)}"
 
     // 1. Add a named constant to SettingItemEntity.

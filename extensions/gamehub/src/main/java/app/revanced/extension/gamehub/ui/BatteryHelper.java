@@ -1,11 +1,10 @@
 package app.revanced.extension.gamehub.ui;
 
+import android.annotation.SuppressLint;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import android.annotation.SuppressLint;
 
 import app.revanced.extension.gamehub.util.GHLog;
 
@@ -30,8 +29,12 @@ public final class BatteryHelper {
             ViewGroup parent = (ViewGroup) batteryImageView.getParent();
             if (parent == null) return;
 
-            int tvId = batteryImageView.getResources().getIdentifier(
-                    "tv_battery_percent", "id", batteryImageView.getContext().getPackageName());
+            int tvId = batteryImageView
+                    .getResources()
+                    .getIdentifier(
+                            "tv_battery_percent",
+                            "id",
+                            batteryImageView.getContext().getPackageName());
             if (tvId == 0) return;
 
             View tv = parent.findViewById(tvId);

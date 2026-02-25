@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -41,12 +41,9 @@ public class SteamCdnHelper {
 
     private static final GHLog L = GHLog.CDN;
 
-    private static final String STORE_API_URL =
-            "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/";
-    private static final String CDN_FALLBACK_BASE =
-            "https://shared.steamstatic.com/store_item_assets/";
-    private static final String BIGEYES_CDN_BASE =
-            "https://cdn-library-logo-global.bigeyes.com/";
+    private static final String STORE_API_URL = "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/";
+    private static final String CDN_FALLBACK_BASE = "https://shared.steamstatic.com/store_item_assets/";
+    private static final String BIGEYES_CDN_BASE = "https://cdn-library-logo-global.bigeyes.com/";
     private static final String PREFS_NAME = "steam_cdn_cache";
     private static final long CACHE_TTL_MS = 7L * 24 * 60 * 60 * 1000; // 7 days
     private static final int BATCH_SIZE = 50;
@@ -62,12 +59,11 @@ public class SteamCdnHelper {
     private static final AtomicBoolean batchScheduled = new AtomicBoolean(false);
 
     // Single daemon background thread for batched L3 API calls.
-    private static final ScheduledExecutorService executor =
-            Executors.newSingleThreadScheduledExecutor(r -> {
-                Thread t = new Thread(r, "steam-cdn");
-                t.setDaemon(true);
-                return t;
-            });
+    private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread t = new Thread(r, "steam-cdn");
+        t.setDaemon(true);
+        return t;
+    });
 
     /**
      * Resolves the header image URL for the given Steam app ID.
@@ -206,8 +202,7 @@ public class SteamCdnHelper {
             L.d("fetchBatch: HTTP " + code);
             if (code != 200) return new HashMap<>();
 
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             try {
                 StringBuilder sb = new StringBuilder();
                 String line;

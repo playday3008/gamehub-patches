@@ -36,34 +36,43 @@ val fileManagerAccessPatch = resourcePatch(
             // Guard: skip if the provider is already registered (idempotency).
             val existingProviders = dom.getElementsByTagName("provider").asSequence()
             if (existingProviders.any {
-                it.attributes.getNamedItem("android:name")?.nodeValue == PROVIDER_CLASS
-            }) {
+                    it.attributes.getNamedItem("android:name")?.nodeValue == PROVIDER_CLASS
+                }
+            ) {
                 return@apply
             }
 
             // Register the wake-up activity.
-            dom.createElement("activity").apply {
-                setAttribute("android:name", WAKEUP_CLASS)
-                setAttribute("android:exported", "true")
-                setAttribute("android:excludeFromRecents", "true")
-                setAttribute("android:noHistory", "true")
-                setAttribute("android:taskAffinity", wakeUpTaskAffinity)
-            }.let(applicationNode::appendChild)
+            dom
+                .createElement("activity")
+                .apply {
+                    setAttribute("android:name", WAKEUP_CLASS)
+                    setAttribute("android:exported", "true")
+                    setAttribute("android:excludeFromRecents", "true")
+                    setAttribute("android:noHistory", "true")
+                    setAttribute("android:taskAffinity", wakeUpTaskAffinity)
+                }.let(applicationNode::appendChild)
 
             // Register the documents provider.
-            dom.createElement("provider").apply {
-                setAttribute("android:name", PROVIDER_CLASS)
-                setAttribute("android:authorities", providerAuthority)
-                setAttribute("android:exported", "true")
-                setAttribute("android:grantUriPermissions", "true")
-                setAttribute("android:permission", "android.permission.MANAGE_DOCUMENTS")
+            dom
+                .createElement("provider")
+                .apply {
+                    setAttribute("android:name", PROVIDER_CLASS)
+                    setAttribute("android:authorities", providerAuthority)
+                    setAttribute("android:exported", "true")
+                    setAttribute("android:grantUriPermissions", "true")
+                    setAttribute("android:permission", "android.permission.MANAGE_DOCUMENTS")
 
-                dom.createElement("intent-filter").apply {
-                    dom.createElement("action").apply {
-                        setAttribute("android:name", "android.content.action.DOCUMENTS_PROVIDER")
-                    }.let(this::appendChild)
-                }.let(this::appendChild)
-            }.let(applicationNode::appendChild)
+                    dom
+                        .createElement("intent-filter")
+                        .apply {
+                            dom
+                                .createElement("action")
+                                .apply {
+                                    setAttribute("android:name", "android.content.action.DOCUMENTS_PROVIDER")
+                                }.let(this::appendChild)
+                        }.let(this::appendChild)
+                }.let(applicationNode::appendChild)
         }
     }
 }

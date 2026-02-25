@@ -1,8 +1,8 @@
 package app.revanced.patches.gamehub.misc.tokenexpiry
 
+import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.patcher.extensions.addInstructionsWithLabels
 import app.revanced.patcher.extensions.instructions
-import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.util.getReference
@@ -46,7 +46,7 @@ internal val bypassTokenExpiryPatch = bytecodePatch {
                                 "Lcom/xj/bussiness/devicemanagement/utils/DeviceManager;" &&
                                 it.name == "a"
                         } == true
-                }
+                },
             ]
 
             addInstructionsWithLabels(

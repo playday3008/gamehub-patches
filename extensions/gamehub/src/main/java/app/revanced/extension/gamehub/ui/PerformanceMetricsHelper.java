@@ -1,5 +1,6 @@
 package app.revanced.extension.gamehub.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Handler;
@@ -9,14 +10,12 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
-import java.util.Locale;
-
-import android.annotation.SuppressLint;
-
 import app.revanced.extension.gamehub.prefs.GameHubPrefs;
 import app.revanced.extension.gamehub.util.DeviceMetrics;
 import app.revanced.extension.gamehub.util.GHLog;
+
+import java.lang.ref.WeakReference;
+import java.util.Locale;
 
 /**
  * Adds CPU, GPU, and RAM usage metrics to the Performance tab of the
@@ -54,8 +53,7 @@ public final class PerformanceMetricsHelper {
             header.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
             header.setTypeface(null, Typeface.BOLD);
             LinearLayout.LayoutParams headerParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT);
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             headerParams.topMargin = dpToPx(ctx, 16);
             headerParams.bottomMargin = dpToPx(ctx, 8);
             headerParams.leftMargin = dpToPx(ctx, 16);
@@ -96,8 +94,7 @@ public final class PerformanceMetricsHelper {
         tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
         tv.setTypeface(Typeface.MONOSPACE);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.leftMargin = dpToPx(ctx, 16);
         params.topMargin = dpToPx(ctx, 2);
         tv.setLayoutParams(params);

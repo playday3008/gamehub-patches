@@ -8,12 +8,15 @@ allprojects {
         if (path.startsWith(":extensions:")) {
             java {
                 target("src/**/*.java")
-                googleJavaFormat().aosp()
+                toggleOffOn()
+                palantirJavaFormat()
+                importOrder("android", "androidx", "", "java", "javax")
             }
         }
         if (path == ":patches") {
             kotlin {
                 target("src/**/*.kt")
+                toggleOffOn()
                 ktlint()
             }
         }

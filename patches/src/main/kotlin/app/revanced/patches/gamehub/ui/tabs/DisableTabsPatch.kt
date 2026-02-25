@@ -25,28 +25,28 @@ val disableTabsPatch = bytecodePatch(
         }.apply {
             val discoverNewInstanceIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.NEW_INSTANCE &&
-                        (this as? ReferenceInstruction)?.reference?.let {
-                            it is TypeReference && it.type == "Lcom/xj/landscape/launcher/ui/main/w;"
-                        } == true
+                    (this as? ReferenceInstruction)?.reference?.let {
+                        it is TypeReference && it.type == "Lcom/xj/landscape/launcher/ui/main/w;"
+                    } == true
             }
             val discoverAddIndex = indexOfFirstInstructionOrThrow(discoverNewInstanceIndex) {
                 opcode == Opcode.INVOKE_INTERFACE &&
-                        (this as? ReferenceInstruction)?.reference?.let {
-                            it is MethodReference && it.name == "add"
-                        } == true
+                    (this as? ReferenceInstruction)?.reference?.let {
+                        it is MethodReference && it.name == "add"
+                    } == true
             }
 
             val findGamesNewInstanceIndex = indexOfFirstInstructionOrThrow {
                 opcode == Opcode.NEW_INSTANCE &&
-                        (this as? ReferenceInstruction)?.reference?.let {
-                            it is TypeReference && it.type == "Lcom/xj/landscape/launcher/ui/main/x;"
-                        } == true
+                    (this as? ReferenceInstruction)?.reference?.let {
+                        it is TypeReference && it.type == "Lcom/xj/landscape/launcher/ui/main/x;"
+                    } == true
             }
             val findGamesAddIndex = indexOfFirstInstructionOrThrow(findGamesNewInstanceIndex) {
                 opcode == Opcode.INVOKE_INTERFACE &&
-                        (this as? ReferenceInstruction)?.reference?.let {
-                            it is MethodReference && it.name == "add"
-                        } == true
+                    (this as? ReferenceInstruction)?.reference?.let {
+                        it is MethodReference && it.name == "add"
+                    } == true
             }
 
             // Remove in reverse order to preserve indices

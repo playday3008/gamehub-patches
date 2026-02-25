@@ -67,16 +67,14 @@ public final class CompatibilityCache {
 
             // Construct GameCompatibilityParams(String, String, String, int, List).
             Class<?> gcpClass = Class.forName("com.xj.common.service.bean.GameCompatibilityParams");
-            Constructor<?> ctor = gcpClass.getConstructor(
-                    String.class, String.class, String.class, int.class, java.util.List.class
-            );
+            Constructor<?> ctor =
+                    gcpClass.getConstructor(String.class, String.class, String.class, int.class, java.util.List.class);
             return ctor.newInstance(
                     title != null ? title : "",
                     icon != null ? icon : "",
                     desc != null ? desc : "",
                     level,
-                    new ArrayList<>()
-            );
+                    new ArrayList<>());
         } catch (Exception e) {
             GHLog.COMPAT.w("getOrBuildCompat failed", e);
             return null;

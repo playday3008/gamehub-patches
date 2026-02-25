@@ -65,8 +65,7 @@ val logServerClearButtonPatch = bytecodePatch(
                         "        .clear-btn:hover {\n" +
                         "            background: #c0392b;\n" +
                         "        }",
-                )
-                .replace(
+                ).replace(
                     "<h1>WinEmu Log Server</h1>\n    </div>",
                     "<h1>WinEmu Log Server</h1>\n" +
                         "        <button class=\"clear-btn\" " +

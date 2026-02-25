@@ -1,14 +1,14 @@
 package app.revanced.patches.gamehub.network
 
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
+import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.addInstructionsWithLabels
-import app.revanced.patcher.extensions.replaceInstruction
 import app.revanced.patcher.extensions.getInstruction
 import app.revanced.patcher.extensions.removeInstruction
+import app.revanced.patcher.extensions.replaceInstruction
 import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
-import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.patches.gamehub.CONTENT_TYPE_API
 import app.revanced.patches.gamehub.CONTENT_TYPE_LOG_REQUESTS
 import app.revanced.patches.gamehub.EXTENSION_PREFS
@@ -16,10 +16,10 @@ import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.errorhandling.errorHandlingPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
-import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
-import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
+import app.revanced.patches.gamehub.misc.token.TOKEN_PROVIDER_CLASS
+import app.revanced.patches.gamehub.misc.token.tokenResolutionPatch
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode

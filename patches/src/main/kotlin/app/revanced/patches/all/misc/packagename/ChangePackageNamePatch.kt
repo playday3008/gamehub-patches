@@ -1,6 +1,9 @@
 package app.revanced.patches.all.misc.packagename
 
-import app.revanced.patcher.patch.*
+import app.revanced.patcher.patch.Option
+import app.revanced.patcher.patch.booleanOption
+import app.revanced.patcher.patch.resourcePatch
+import app.revanced.patcher.patch.stringOption
 import app.revanced.util.asSequence
 import app.revanced.util.getNode
 import org.w3c.dom.Element

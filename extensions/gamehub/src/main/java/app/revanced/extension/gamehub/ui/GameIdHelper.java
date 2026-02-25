@@ -1,5 +1,6 @@
 package app.revanced.extension.gamehub.ui;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -8,8 +9,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import android.annotation.SuppressLint;
 
 import app.revanced.extension.gamehub.util.GHLog;
 
@@ -42,20 +41,20 @@ public class GameIdHelper {
             container.setVisibility(View.VISIBLE);
 
             if (hasSteam) {
-                setupCopyableText(activity, "tv_steam_app_id",
-                        "Steam App ID: " + steamAppId, steamAppId, "Steam App ID");
+                setupCopyableText(
+                        activity, "tv_steam_app_id", "Steam App ID: " + steamAppId, steamAppId, "Steam App ID");
             }
             if (hasLocal) {
-                setupCopyableText(activity, "tv_local_game_id",
-                        "Local Game ID: " + localGameId, localGameId, "Local Game ID");
+                setupCopyableText(
+                        activity, "tv_local_game_id", "Local Game ID: " + localGameId, localGameId, "Local Game ID");
             }
         } catch (Exception e) {
             GHLog.GAME_ID.w("populateGameId failed", e);
         }
     }
 
-    private static void setupCopyableText(Activity activity, String idName,
-                                           String displayText, String copyValue, String label) {
+    private static void setupCopyableText(
+            Activity activity, String idName, String displayText, String copyValue, String label) {
         int id = resolveId(activity, idName);
         if (id == 0) return;
 
@@ -65,8 +64,7 @@ public class GameIdHelper {
         tv.setText(displayText);
         tv.setVisibility(View.VISIBLE);
         tv.setOnClickListener(v -> {
-            ClipboardManager clipboard = (ClipboardManager)
-                    activity.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
             if (clipboard != null) {
                 clipboard.setPrimaryClip(ClipData.newPlainText(label, copyValue));
                 Toast.makeText(activity, label + " copied!", Toast.LENGTH_SHORT).show();

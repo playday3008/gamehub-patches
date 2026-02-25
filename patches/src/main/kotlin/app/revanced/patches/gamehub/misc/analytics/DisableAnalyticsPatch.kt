@@ -29,8 +29,7 @@ private val AD_TRACKING_PERMISSIONS = setOf(
     "android.permission.ACCESS_ADSERVICES_AD_ID",
 )
 
-private fun String.isAnalyticsComponent() =
-    ANALYTICS_PATTERNS.any { lowercase().contains(it) }
+private fun String.isAnalyticsComponent() = ANALYTICS_PATTERNS.any { lowercase().contains(it) }
 
 private val analyticsCleanupResourcePatch = resourcePatch {
     apply {
@@ -57,30 +56,43 @@ private val analyticsCleanupResourcePatch = resourcePatch {
         // Remove analytics components, meta-data, and ad-tracking permissions from the manifest.
         document("AndroidManifest.xml").use { dom ->
             // Application-level components (providers, services, activities, receivers, meta-data).
-            listOf("provider", "service", "activity", "receiver", "meta-data").flatMap { tag ->
-                dom.getElementsByTagName(tag).asSequence().filter { node ->
-                    node.attributes.getNamedItem("android:name")?.nodeValue
-                        ?.isAnalyticsComponent() == true
-                }.toList()
-            }.forEach { node ->
-                node.parentNode.removeChild(node)
-            }
+            listOf("provider", "service", "activity", "receiver", "meta-data")
+                .flatMap { tag ->
+                    dom
+                        .getElementsByTagName(tag)
+                        .asSequence()
+                        .filter { node ->
+                            node.attributes
+                                .getNamedItem("android:name")
+                                ?.nodeValue
+                                ?.isAnalyticsComponent() == true
+                        }.toList()
+                }.forEach { node ->
+                    node.parentNode.removeChild(node)
+                }
 
             // Ad-tracking permissions.
-            dom.getElementsByTagName("uses-permission").asSequence().filter { node ->
-                node.attributes.getNamedItem("android:name")?.nodeValue in AD_TRACKING_PERMISSIONS
-            }.toList().forEach { node ->
-                node.parentNode.removeChild(node)
-            }
+            dom
+                .getElementsByTagName("uses-permission")
+                .asSequence()
+                .filter { node ->
+                    node.attributes.getNamedItem("android:name")?.nodeValue in AD_TRACKING_PERMISSIONS
+                }.toList()
+                .forEach { node ->
+                    node.parentNode.removeChild(node)
+                }
         }
 
         // Belt-and-suspenders: set the analytics-deactivated bool to true.
         document("res/values/bools.xml").use { dom ->
-            dom.getElementsByTagName("bool").asSequence().filter { node ->
-                node.attributes.getNamedItem("name")?.nodeValue == "FIREBASE_ANALYTICS_DEACTIVATED"
-            }.forEach { node ->
-                node.textContent = "true"
-            }
+            dom
+                .getElementsByTagName("bool")
+                .asSequence()
+                .filter { node ->
+                    node.attributes.getNamedItem("name")?.nodeValue == "FIREBASE_ANALYTICS_DEACTIVATED"
+                }.forEach { node ->
+                    node.textContent = "true"
+                }
         }
     }
 }

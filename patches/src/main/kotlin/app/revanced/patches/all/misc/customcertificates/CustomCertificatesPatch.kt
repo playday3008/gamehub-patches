@@ -46,28 +46,32 @@ val customNetworkSecurityPatch = resourcePatch(
 
     val allowUserCerts by booleanOption(
         name = "allowUserCerts",
-        description = "Makes an app trust certificates from the Android user store for the specified domains, and if the option \"Include Subdomains\" is enabled then also the subdomains.",
+        description = "Makes an app trust certificates from the Android user store for the specified domains, " +
+            "and if the option \"Include Subdomains\" is enabled then also the subdomains.",
         default = false,
         required = true,
     )
 
     val allowSystemCerts by booleanOption(
         name = "allowSystemCerts",
-        description = "Makes an app trust certificates from the Android system store for the specified domains, and and if the option \"Include Subdomains\" is enabled then also the subdomains.",
+        description = "Makes an app trust certificates from the Android system store for the specified domains, " +
+            "and and if the option \"Include Subdomains\" is enabled then also the subdomains.",
         default = true,
         required = true,
     )
 
     val allowCleartextTraffic by booleanOption(
         name = "allowCleartextTraffic",
-        description = "Allows unencrypted HTTP traffic for the specified domains, and if \"Include Subdomains\" is enabled then also the subdomains.",
+        description = "Allows unencrypted HTTP traffic for the specified domains, " +
+            "and if \"Include Subdomains\" is enabled then also the subdomains.",
         default = false,
         required = true,
     )
 
     val overridePins by booleanOption(
         name = "overridePins",
-        description = "Overrides certificate pinning for the specified domains and their subdomains if the option \"Include Subdomains\" is enabled to allow inspecting app traffic via a proxy.",
+        description = "Overrides certificate pinning for the specified domains and their subdomains " +
+            "if the option \"Include Subdomains\" is enabled to allow inspecting app traffic via a proxy.",
         default = false,
         required = true,
     )
@@ -114,7 +118,7 @@ ${trustAnchorsXML.trimEnd()}
                 </trust-anchors>
             </domain-config>
         </network-security-config>
-    """.trimIndent()
+            """.trimIndent()
     }
 
     apply {

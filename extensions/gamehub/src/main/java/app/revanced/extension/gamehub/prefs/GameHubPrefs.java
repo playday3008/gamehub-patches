@@ -1,7 +1,6 @@
 package app.revanced.extension.gamehub.prefs;
 
 import android.content.SharedPreferences;
-import android.os.Environment;
 
 import app.revanced.extension.gamehub.token.TokenProvider;
 import app.revanced.extension.gamehub.ui.CompatibilityCache;
@@ -51,7 +50,9 @@ public class GameHubPrefs {
 
     public static void toggleAPI() {
         SharedPreferences prefs = getPrefs();
-        prefs.edit().putBoolean(KEY_EXTERNAL_API, !prefs.getBoolean(KEY_EXTERNAL_API, true)).apply();
+        prefs.edit()
+                .putBoolean(KEY_EXTERNAL_API, !prefs.getBoolean(KEY_EXTERNAL_API, true))
+                .apply();
     }
 
     /**
@@ -64,9 +65,18 @@ public class GameHubPrefs {
             android.content.Context ctx = Utils.a();
             int mode = android.content.Context.MODE_PRIVATE;
             // Clear component catalogs (populated per-API, version codes may collide across sources).
-            ctx.getSharedPreferences("sp_winemu_all_components12", mode).edit().clear().apply();
-            ctx.getSharedPreferences("sp_winemu_all_containers", mode).edit().clear().apply();
-            ctx.getSharedPreferences("sp_winemu_all_imageFs", mode).edit().clear().apply();
+            ctx.getSharedPreferences("sp_winemu_all_components12", mode)
+                    .edit()
+                    .clear()
+                    .apply();
+            ctx.getSharedPreferences("sp_winemu_all_containers", mode)
+                    .edit()
+                    .clear()
+                    .apply();
+            ctx.getSharedPreferences("sp_winemu_all_imageFs", mode)
+                    .edit()
+                    .clear()
+                    .apply();
             // Clear global component metadata (dxvk, vkd3d, imagefs, steam_client, general_component).
             ctx.getSharedPreferences("pc_g_setting", mode).edit().clear().apply();
             // Clear persistent cookies (PersistentCookieJar stores session cookies here).
@@ -106,7 +116,9 @@ public class GameHubPrefs {
 
     public static void toggleStorageLocation() {
         SharedPreferences prefs = getPrefs();
-        prefs.edit().putBoolean(KEY_CUSTOM_STORAGE, !prefs.getBoolean(KEY_CUSTOM_STORAGE, false)).apply();
+        prefs.edit()
+                .putBoolean(KEY_CUSTOM_STORAGE, !prefs.getBoolean(KEY_CUSTOM_STORAGE, false))
+                .apply();
     }
 
     public static String getCustomStoragePath() {
@@ -187,8 +199,8 @@ public class GameHubPrefs {
                 // KEY_LAST_API_SOURCE defaults to true (EmuReady) if absent, matching isExternalAPI() default.
                 boolean lastSource = prefs.getBoolean(KEY_LAST_API_SOURCE, true);
                 if (!prefs.contains(KEY_LAST_API_SOURCE) || currentSource != lastSource) {
-                    GHLog.PREFS.d("API source mismatch on startup (current=" + currentSource
-                            + ", last=" + lastSource + ") — clearing caches");
+                    GHLog.PREFS.d("API source mismatch on startup (current=" + currentSource + ", last=" + lastSource
+                            + ") — clearing caches");
                     clearComponentAndTokenCaches();
                     prefs.edit().putBoolean(KEY_LAST_API_SOURCE, currentSource).apply();
                 }
@@ -228,9 +240,8 @@ public class GameHubPrefs {
             if (proposedState) {
                 String path = autoDetectSDCardStorage();
                 if (path == null) {
-                    android.widget.Toast.makeText(
-                            Utils.a(), "No SD card found", android.widget.Toast.LENGTH_SHORT
-                    ).show();
+                    android.widget.Toast.makeText(Utils.a(), "No SD card found", android.widget.Toast.LENGTH_SHORT)
+                            .show();
                     return false; // revert visual state immediately
                 }
                 getPrefs().edit().putBoolean(KEY_CUSTOM_STORAGE, true).apply();
@@ -243,19 +254,22 @@ public class GameHubPrefs {
             boolean newState = !isLogAllRequestsEnabled();
             getPrefs().edit().putBoolean(KEY_LOG_ALL_REQUESTS, newState).apply();
             String msg = newState ? "Logging all API requests" : "Logging 4xx requests only";
-            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
+            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT)
+                    .show();
             return newState;
         } else if (contentType == CONTENT_TYPE_CPU_USAGE) {
             boolean newState = !isCpuUsageEnabled();
             getPrefs().edit().putBoolean(KEY_CPU_USAGE, newState).apply();
             String msg = newState ? "CPU usage display enabled" : "CPU usage display disabled";
-            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
+            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT)
+                    .show();
             return newState;
         } else if (contentType == CONTENT_TYPE_PERF_METRICS) {
             boolean newState = !isPerfMetricsEnabled();
             getPrefs().edit().putBoolean(KEY_PERF_METRICS, newState).apply();
             String msg = newState ? "Performance metrics enabled" : "Performance metrics disabled";
-            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
+            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT)
+                    .show();
             return newState;
         } else if (contentType == CONTENT_TYPE_API) {
             toggleAPI();
@@ -264,7 +278,8 @@ public class GameHubPrefs {
             String msg = proposedState
                     ? "Switched to EmuReady API — restart to refresh components"
                     : "Switched to Official API — restart to refresh components";
-            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT).show();
+            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT)
+                    .show();
             return proposedState;
         }
         return proposedState;
@@ -280,9 +295,10 @@ public class GameHubPrefs {
     @SuppressWarnings("JavaReflectionMemberAccess")
     public static Object addCompatibilityHeaders(Object builder) {
         try {
-            java.lang.reflect.Method addHeader = builder.getClass()
-                    .getMethod("addHeader", String.class, String.class);
-            addHeader.invoke(builder, "User-Agent",
+            java.lang.reflect.Method addHeader = builder.getClass().getMethod("addHeader", String.class, String.class);
+            addHeader.invoke(
+                    builder,
+                    "User-Agent",
                     "Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36");
             addHeader.invoke(builder, "Accept", "application/json, text/plain, */*");
             addHeader.invoke(builder, "Accept-Language", "en-US,en;q=0.9");
@@ -378,8 +394,8 @@ public class GameHubPrefs {
                     Object peekBody = response.getClass()
                             .getMethod("peekBody", long.class)
                             .invoke(response, 1048576L); // 1 MB max
-                    String bodyString = (String) peekBody.getClass()
-                            .getMethod("string").invoke(peekBody);
+                    String bodyString =
+                            (String) peekBody.getClass().getMethod("string").invoke(peekBody);
                     if (bodyString != null && !bodyString.isEmpty()) {
                         GHLog.NET.d("Response body: " + bodyString);
                     }
@@ -455,7 +471,8 @@ public class GameHubPrefs {
                 if (isTextContentType(reqContentType)) {
                     Class<?> bufferClass = Class.forName("okio.Buffer");
                     Object buffer = bufferClass.getDeclaredConstructor().newInstance();
-                    body.getClass().getMethod("writeTo", Class.forName("okio.BufferedSink"))
+                    body.getClass()
+                            .getMethod("writeTo", Class.forName("okio.BufferedSink"))
                             .invoke(body, buffer);
                     String reqBody = (String) bufferClass.getMethod("readUtf8").invoke(buffer);
                     if (reqBody != null && !reqBody.isEmpty()) {
@@ -477,9 +494,8 @@ public class GameHubPrefs {
      */
     private static String getContentType(Object response) {
         try {
-            return (String) response.getClass()
-                    .getMethod("header", String.class)
-                    .invoke(response, "Content-Type");
+            return (String)
+                    response.getClass().getMethod("header", String.class).invoke(response, "Content-Type");
         } catch (Exception e) {
             return null;
         }
@@ -490,9 +506,8 @@ public class GameHubPrefs {
      */
     private static long getContentLength(Object response) {
         try {
-            String val = (String) response.getClass()
-                    .getMethod("header", String.class)
-                    .invoke(response, "Content-Length");
+            String val = (String)
+                    response.getClass().getMethod("header", String.class).invoke(response, "Content-Length");
             return val != null ? Long.parseLong(val) : -1;
         } catch (Exception e) {
             return -1;

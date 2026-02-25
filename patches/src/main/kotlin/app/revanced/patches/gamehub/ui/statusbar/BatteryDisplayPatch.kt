@@ -20,7 +20,9 @@ private val batteryLayoutPatch = resourcePatch {
         // Add resource IDs to ids.xml (idempotent)
         document("res/values/ids.xml").use { dom ->
             val root = dom.documentElement
-            val existingIds = dom.getElementsByTagName("item").asSequence()
+            val existingIds = dom
+                .getElementsByTagName("item")
+                .asSequence()
                 .map { (it as Element).getAttribute("name") }
                 .toSet()
 
@@ -30,10 +32,12 @@ private val batteryLayoutPatch = resourcePatch {
 
             for (id in newIds) {
                 if (id !in existingIds) {
-                    dom.createElement("item").apply {
-                        setAttribute("name", id)
-                        setAttribute("type", "id")
-                    }.let(root::appendChild)
+                    dom
+                        .createElement("item")
+                        .apply {
+                            setAttribute("name", id)
+                            setAttribute("type", "id")
+                        }.let(root::appendChild)
                 }
             }
         }
@@ -78,9 +82,9 @@ private val batteryLayoutPatch = resourcePatch {
                             break
                         }
                     }
-
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
     }
 }
@@ -105,7 +109,8 @@ val batteryDisplayPatch = bytecodePatch(
                 parameterTypes[1] == "Landroid/widget/ImageView;"
         }.apply {
             val moveResultIndex = indexOfFirstInstructionOrThrow {
-                opcode == Opcode.MOVE_RESULT && this is com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+                opcode == Opcode.MOVE_RESULT &&
+                    this is com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
             }
 
             // Insert after move-result p0

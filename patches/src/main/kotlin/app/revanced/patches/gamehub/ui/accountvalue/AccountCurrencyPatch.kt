@@ -16,7 +16,8 @@ private const val EXTENSION_CLASS = EXTENSION_CURRENCY_HELPER
 @Suppress("unused")
 val accountCurrencyPatch = bytecodePatch(
     name = "Account currency display",
-    description = "Shows the real currency code instead of hardcoded ¥/￥ in the Steam account value and game price labels.",
+    description = "Shows the real currency code instead of hardcoded ¥/￥ " +
+        "in the Steam account value and game price labels.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
     dependsOn(sharedGamehubExtensionPatch)

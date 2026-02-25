@@ -32,8 +32,7 @@ public class TokenProvider {
     /** Set to {@code true} by Bypass Login patch via {@code <clinit>} injection. */
     public static boolean loginBypassed = false;
 
-    private static final String TOKEN_SERVICE_URL =
-            "https://gamehub-lite-token-refresher.emuready.workers.dev/token";
+    private static final String TOKEN_SERVICE_URL = "https://gamehub-lite-token-refresher.emuready.workers.dev/token";
     private static final String AUTH_HEADER_VALUE = "gamehub-internal-token-fetch-2025";
     private static final long CACHE_TTL_MS = 4 * 60 * 60 * 1000L; // 4 hours
 
@@ -111,8 +110,8 @@ public class TokenProvider {
      */
     private static boolean isExternalAPI() {
         try {
-            SharedPreferences prefs = Utils.a()
-                    .getSharedPreferences("steam_storage_pref", android.content.Context.MODE_PRIVATE);
+            SharedPreferences prefs =
+                    Utils.a().getSharedPreferences("steam_storage_pref", android.content.Context.MODE_PRIVATE);
             return prefs.getBoolean("use_external_api", true);
         } catch (Exception e) {
             return true;
@@ -161,7 +160,8 @@ public class TokenProvider {
                 long expiry = System.currentTimeMillis() + CACHE_TTL_MS;
                 l1Cache.set(new CachedToken(freshToken, expiry));
                 try {
-                    getTokenPrefs().edit()
+                    getTokenPrefs()
+                            .edit()
                             .putString(KEY_CACHED_TOKEN, freshToken)
                             .putLong(KEY_CACHED_TOKEN_EXPIRY, expiry)
                             .apply();
@@ -215,8 +215,7 @@ public class TokenProvider {
             L.d("fetchTokenFromService: HTTP " + code);
             if (code != 200) return null;
 
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -317,8 +316,7 @@ public class TokenProvider {
             L.d("forceRefreshFromService: HTTP " + code);
             if (code != 200) return null;
 
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
@@ -358,7 +356,8 @@ public class TokenProvider {
         long expiry = System.currentTimeMillis() + CACHE_TTL_MS;
         l1Cache.set(new CachedToken(token, expiry));
         try {
-            getTokenPrefs().edit()
+            getTokenPrefs()
+                    .edit()
                     .putString(KEY_CACHED_TOKEN, token)
                     .putLong(KEY_CACHED_TOKEN_EXPIRY, expiry)
                     .apply();

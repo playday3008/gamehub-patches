@@ -15,12 +15,18 @@ import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstructio
 private val disablePushManifestPatch = resourcePatch {
     apply {
         document("AndroidManifest.xml").use { dom ->
-            fun removeByName(vararg tags: String, predicate: (String) -> Boolean) {
-                tags.flatMap { tag ->
-                    dom.getElementsByTagName(tag).asSequence()
-                        .filter { predicate(it.attributes.getNamedItem("android:name")?.nodeValue ?: "") }
-                        .toList()
-                }.forEach { it.parentNode?.removeChild(it) }
+            fun removeByName(
+                vararg tags: String,
+                predicate: (String) -> Boolean,
+            ) {
+                tags
+                    .flatMap { tag ->
+                        dom
+                            .getElementsByTagName(tag)
+                            .asSequence()
+                            .filter { predicate(it.attributes.getNamedItem("android:name")?.nodeValue ?: "") }
+                            .toList()
+                    }.forEach { it.parentNode?.removeChild(it) }
             }
 
             // Remove JPUSH_MESSAGE custom permission declarations (children of <manifest>)

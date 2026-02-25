@@ -19,7 +19,7 @@ private val classLoader = object {}.javaClass.classLoader
  *
  * @return The node that was removed (object this method was called on).
  */
-fun Node.removeFromParent() : Node = parentNode.removeChild(this)
+fun Node.removeFromParent(): Node = parentNode.removeChild(this)
 
 /**
  * Returns a sequence for all child nodes.
@@ -79,8 +79,10 @@ fun ResourcePatchContext.copyResources(
             val resourceFile = "${resourceGroup.resourceDirectoryName}/$resource"
             val stream = inputStreamFromBundledResource(sourceResourceDirectory, resourceFile)
             if (stream == null) {
-                throw IllegalArgumentException("Could not find resource: $resourceFile " +
-                        "in directory: $sourceResourceDirectory")
+                throw IllegalArgumentException(
+                    "Could not find resource: $resourceFile " +
+                        "in directory: $sourceResourceDirectory",
+                )
             }
             Files.copy(
                 stream,
@@ -101,7 +103,10 @@ internal fun inputStreamFromBundledResource(
  * @param resourceDirectoryName The name of the directory of the resource.
  * @param resources A list of resource names.
  */
-class ResourceGroup(val resourceDirectoryName: String, vararg val resources: String)
+class ResourceGroup(
+    val resourceDirectoryName: String,
+    vararg val resources: String,
+)
 
 /**
  * Iterate through the children of a node by its tag.
@@ -158,7 +163,10 @@ internal fun Node.addResource(
 
 internal fun Document.getNode(tagName: String) = getElementsByTagName(tagName).item(0)
 
-internal fun NodeList.findElementByAttributeValue(attributeName: String, value: String): Element? {
+internal fun NodeList.findElementByAttributeValue(
+    attributeName: String,
+    value: String,
+): Element? {
     for (i in 0 until length) {
         val node = item(i)
         if (node.nodeType == Node.ELEMENT_NODE) {
@@ -179,8 +187,10 @@ internal fun NodeList.findElementByAttributeValue(attributeName: String, value: 
     return null
 }
 
-internal fun NodeList.findElementByAttributeValueOrThrow(attributeName: String, value: String) =
-    findElementByAttributeValue(attributeName, value) ?: throw PatchException("Could not find: $attributeName $value")
+internal fun NodeList.findElementByAttributeValueOrThrow(
+    attributeName: String,
+    value: String,
+) = findElementByAttributeValue(attributeName, value) ?: throw PatchException("Could not find: $attributeName $value")
 
 internal fun Element.copyAttributesFrom(oldContainer: Element) {
     // Copy attributes from the old element to the new element
@@ -196,9 +206,10 @@ internal fun Element.copyAttributesFrom(oldContainer: Element) {
  */
 internal fun ResourcePatchContext.findPlayStoreServicesVersion(): Int =
     document("res/values/integers.xml").use { document ->
-        document.documentElement.childNodes.findElementByAttributeValueOrThrow(
-            "name",
-            "google_play_services_version",
-        ).textContent.toInt()
+        document.documentElement.childNodes
+            .findElementByAttributeValueOrThrow(
+                "name",
+                "google_play_services_version",
+            ).textContent
+            .toInt()
     }
-

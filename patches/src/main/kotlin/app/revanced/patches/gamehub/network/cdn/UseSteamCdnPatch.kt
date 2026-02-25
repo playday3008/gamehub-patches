@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.network.cdn
 
 import app.revanced.com.android.tools.smali.dexlib2.mutable.MutableMethod
+import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.patcher.extensions.addInstructions
 import app.revanced.patcher.extensions.addInstructionsWithLabels
 import app.revanced.patcher.extensions.getInstruction
@@ -8,7 +9,6 @@ import app.revanced.patcher.extensions.instructions
 import app.revanced.patcher.extensions.replaceInstruction
 import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
-import app.revanced.patcher.extensions.ExternalLabel
 import app.revanced.patches.gamehub.EXTENSION_STEAM_CDN_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
@@ -97,7 +97,8 @@ val useSteamCdnPatch = bytecodePatch(
         // Normalizing at the getter ensures the game detail background loads from Steam CDN.
         val normalizeReturn = { method: MutableMethod ->
             method.apply {
-                val returnIndices = instructions.withIndex()
+                val returnIndices = instructions
+                    .withIndex()
                     .filter { it.value.opcode == Opcode.RETURN_OBJECT }
                     .map { it.index }
                     .reversed()

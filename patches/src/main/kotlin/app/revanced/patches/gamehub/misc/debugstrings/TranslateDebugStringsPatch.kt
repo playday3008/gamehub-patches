@@ -12,6 +12,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 /** Strings set programmatically across multiple debug-related classes. */
+@Suppress("ktlint:standard:max-line-length", "ktlint:standard:binary-expression-wrapping")
 private val smaliTranslations = mapOf(
     // SettingMainActivity — debug section menu item label
     "调试" to "Debug",
@@ -443,6 +444,7 @@ private val smaliTranslations = mapOf(
 )
 
 /** Static android:text values hardcoded in the debug layout XML. */
+@Suppress("ktlint:standard:max-line-length", "ktlint:standard:binary-expression-wrapping")
 private val layoutTranslations = mapOf(
     "打包Flavor：" to "Build Flavor:",
     "Git SHA：" to "Git SHA:",
@@ -507,8 +509,7 @@ val translateDebugStringsPatch = bytecodePatch(
                             )
                     } == true
                 }
-            }
-            .forEach { classDef ->
+            }.forEach { classDef ->
                 val mutableClass = classDefs.getOrReplaceMutable(classDef)
                 mutableClass.methods.forEach { method ->
                     val instructions = method.implementation?.instructions ?: return@forEach

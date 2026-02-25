@@ -23,15 +23,19 @@ private val cpuLayoutPatch = resourcePatch {
         // Add tv_cpu_percent resource ID to ids.xml.
         document("res/values/ids.xml").use { dom ->
             val root = dom.documentElement
-            val existingIds = dom.getElementsByTagName("item").asSequence()
+            val existingIds = dom
+                .getElementsByTagName("item")
+                .asSequence()
                 .map { (it as Element).getAttribute("name") }
                 .toSet()
 
             if ("tv_cpu_percent" !in existingIds) {
-                dom.createElement("item").apply {
-                    setAttribute("name", "tv_cpu_percent")
-                    setAttribute("type", "id")
-                }.let(root::appendChild)
+                dom
+                    .createElement("item")
+                    .apply {
+                        setAttribute("name", "tv_cpu_percent")
+                        setAttribute("type", "id")
+                    }.let(root::appendChild)
             }
         }
 
@@ -55,7 +59,8 @@ private val cpuLayoutPatch = resourcePatch {
                         break
                     }
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
         }
     }
 }
