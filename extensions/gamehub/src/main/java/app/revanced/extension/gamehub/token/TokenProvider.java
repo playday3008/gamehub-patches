@@ -8,7 +8,7 @@ import com.blankj.utilcode.util.Utils;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -204,7 +204,7 @@ public class TokenProvider {
     private static String fetchTokenFromService() throws Exception {
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection) new URL(TOKEN_SERVICE_URL).openConnection();
+            conn = (HttpURLConnection) URI.create(TOKEN_SERVICE_URL).toURL().openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("X-Worker-Auth", AUTH_HEADER_VALUE);
             conn.setRequestProperty("Accept", "application/json");
@@ -300,7 +300,7 @@ public class TokenProvider {
         HttpURLConnection conn = null;
         try {
             String refreshUrl = TOKEN_SERVICE_URL.replace("/token", "/refresh");
-            conn = (HttpURLConnection) new URL(refreshUrl).openConnection();
+            conn = (HttpURLConnection) URI.create(refreshUrl).toURL().openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("X-Worker-Auth", AUTH_HEADER_VALUE);
             conn.setRequestProperty("Content-Type", "application/json");
