@@ -1,6 +1,26 @@
-// This file exists so Dependabot's Gradle file fetcher can discover the project.
+plugins {
+    id("com.diffplug.spotless") version "8.2.1"
+}
 
-subprojects {
+allprojects {
+    apply(plugin = "com.diffplug.spotless")
+    extensions.configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+        if (path.startsWith(":extensions:")) {
+            java {
+                target("src/**/*.java")
+                googleJavaFormat().aosp()
+            }
+        }
+        if (path == ":patches") {
+            kotlin {
+                target("src/**/*.kt")
+                ktlint()
+            }
+        }
+        kotlinGradle {
+            ktlint()
+        }
+    }
     // Apply eclipse plugin to Android extension modules so Buildship/JDT LS
     // gets correct source directories (AGP 9.x doesn't expose source sets
     // through the Gradle Tooling API model that Buildship understands).
@@ -9,7 +29,8 @@ subprojects {
         afterEvaluate {
             // Resolve android.jar from the Android SDK for eclipse classpath.
             // Try local.properties first, then ANDROID_HOME / ANDROID_SDK_ROOT env vars.
-            val sdkDir = rootProject.file("local.properties")
+            val sdkDir = rootProject
+                .file("local.properties")
                 .takeIf { it.exists() }
                 ?.let { f ->
                     val props = java.util.Properties().apply { f.inputStream().use { load(it) } }
@@ -19,7 +40,8 @@ subprojects {
                 ?: System.getenv("ANDROID_SDK_ROOT")?.let(::File)
 
             val androidJar = sdkDir
-                ?.resolve("platforms")?.listFiles()
+                ?.resolve("platforms")
+                ?.listFiles()
                 ?.filter { it.resolve("android.jar").exists() }
                 ?.maxByOrNull { it.name }
                 ?.resolve("android.jar")
@@ -41,7 +63,9 @@ subprojects {
                                 ),
                             )
                             // Add compileOnly project dependencies as project refs.
-                            configurations.findByName("compileOnly")?.dependencies
+                            configurations
+                                .findByName("compileOnly")
+                                ?.dependencies
                                 ?.filterIsInstance<ProjectDependency>()
                                 ?.forEach { dep ->
                                     val depName = (dep as ProjectDependency).name
@@ -66,7 +90,8 @@ subprojects {
                                 if (!hasAndroid) {
                                     cp.entries.add(
                                         org.gradle.plugins.ide.eclipse.model.Library(
-                                            org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory()
+                                            org.gradle.plugins.ide.eclipse.model.internal
+                                                .FileReferenceFactory()
                                                 .fromPath(androidJar.absolutePath),
                                         ),
                                     )
