@@ -16,7 +16,7 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.addAll(
             "-Xexplicit-backing-fields",
-            "-Xcontext-parameters"
+            "-Xcontext-parameters",
         )
     }
 }

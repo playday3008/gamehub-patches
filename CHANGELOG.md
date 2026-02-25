@@ -1,5 +1,7 @@
 ## [1.0.6-dev.1](https://github.com/playday3008/gamehub-patches/compare/v1.0.5...v1.0.6-dev.1) (2026-02-24)
 
+## [1.0.6-dev.1](https://github.com/playday3008/gamehub-patches/compare/v1.0.5...v1.0.6-dev.1) (2026-02-24)
+
 ## [1.0.5](https://github.com/playday3008/gamehub-patches/compare/v1.0.4...v1.0.5) (2026-02-21)
 
 
