@@ -42,7 +42,7 @@ val changePackageNamePatch = resourcePatch(
         description = "The name of the package to rename the app to.",
         required = true,
     ) {
-        it == "Default" || it!!.matches(Regex("^[a-z]\\w*(\\.[a-z]\\w*)+$"))
+        it == "Default" || it!!.matches(Regex("^[a-zA-Z]\\w*(\\.[a-zA-Z]\\w*)+$"))
     }
 
     val updatePermissions by booleanOption(
