@@ -54,6 +54,10 @@ public final class app/revanced/patches/gamehub/misc/heartbeat/DisableHeartbeatP
 	public static final fun getDisableHeartbeatPatch ()Lapp/revanced/patcher/patch/Patch;
 }
 
+public final class app/revanced/patches/gamehub/misc/launcher/ExternalLauncherPatchKt {
+	public static final fun getExternalLauncherPatch ()Lapp/revanced/patcher/patch/Patch;
+}
+
 public final class app/revanced/patches/gamehub/misc/login/BypassLoginPatchKt {
 	public static final fun getBypassLoginPatch ()Lapp/revanced/patcher/patch/Patch;
 }

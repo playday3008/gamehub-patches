@@ -152,46 +152,24 @@ private val manifestCleanupResourcePatch = resourcePatch {
                 .getElementsByTagName("activity")
                 .asSequence()
                 .map { it as Element }
+                .filter { it.getAttribute("android:name").contains("WineActivity") }
                 .forEach { activity ->
-                    val name = activity.getAttribute("android:name")
-                    when {
-                        name.contains("GameDetailActivity") -> {
-                            activity.setAttribute("android:exported", "true")
-                            dom
-                                .createElement("intent-filter")
-                                .apply {
-                                    dom
-                                        .createElement("action")
-                                        .apply {
-                                            setAttribute("android:name", "gamehub.lite.LAUNCH_GAME")
-                                        }.let(this::appendChild)
-                                    dom
-                                        .createElement("category")
-                                        .apply {
-                                            setAttribute("android:name", "android.intent.category.DEFAULT")
-                                        }.let(this::appendChild)
-                                }.let(activity::appendChild)
-                        }
-
-                        name.contains("WineActivity") -> {
-                            activity.setAttribute("android:preferMinimalPostProcessing", "true")
-                            activity.setAttribute("android:enableOnBackInvokedCallback", "false")
-                            activity.setAttribute("android:resizeableActivity", "false")
-                            // Add NVIDIA meta-data
-                            dom
-                                .createElement("meta-data")
-                                .apply {
-                                    setAttribute("android:name", "com.nvidia.immediateInput")
-                                    setAttribute("android:value", "true")
-                                }.let(activity::appendChild)
-                            dom
-                                .createElement("meta-data")
-                                .apply {
-                                    setAttribute("android:name", "com.nvidia.rawCursorInput")
-                                    setAttribute("android:value", "true")
-                                }.let(activity::appendChild)
-                        }
-                    }
+                    activity.setAttribute("android:preferMinimalPostProcessing", "true")
+                    activity.setAttribute("android:enableOnBackInvokedCallback", "false")
+                    activity.setAttribute("android:resizeableActivity", "false")
+                    // Add NVIDIA meta-data
+                    dom
+                        .createElement("meta-data")
+                        .apply {
+                            setAttribute("android:name", "com.nvidia.immediateInput")
+                            setAttribute("android:value", "true")
+                        }.let(activity::appendChild)
+                    dom
+                        .createElement("meta-data")
+                        .apply {
+                            setAttribute("android:name", "com.nvidia.rawCursorInput")
+                            setAttribute("android:value", "true")
+                        }.let(activity::appendChild)
                 }
 
             // Remove foregroundServiceType from specific services
