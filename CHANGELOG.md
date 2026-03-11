@@ -1,3 +1,10 @@
+## [1.0.6-dev.3](https://github.com/playday3008/gamehub-patches/compare/v1.0.6-dev.2...v1.0.6-dev.3) (2026-03-11)
+
+
+### Bug Fixes
+
+* **ci:** add 'main' branch to pull request triggers in workflows ([#22](https://github.com/playday3008/gamehub-patches/issues/22)) ([a565eef](https://github.com/playday3008/gamehub-patches/commit/a565eef9f0390cd4e4a899b8d34152597a5f8f31))
+
 ## [1.0.6-dev.2](https://github.com/playday3008/gamehub-patches/compare/v1.0.6-dev.1...v1.0.6-dev.2) (2026-03-11)
 
 
