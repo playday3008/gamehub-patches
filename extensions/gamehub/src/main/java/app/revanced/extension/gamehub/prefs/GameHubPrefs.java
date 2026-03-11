@@ -36,6 +36,16 @@ public class GameHubPrefs {
         return getPrefs().getBoolean(KEY_EXTERNAL_API, true);
     }
 
+    /**
+     * Returns whether Steam Input should be forced enabled.
+     * When EmuReady API is active, always returns true because the bundled
+     * SteamAgent.exe does not support the --disablesteaminput flag.
+     * When using the official API, returns the original setting value unchanged.
+     */
+    public static boolean shouldForceEnableSteamInput(boolean originalValue) {
+        return isExternalAPI() || originalValue;
+    }
+
     public static boolean isLogAllRequestsEnabled() {
         return getPrefs().getBoolean(KEY_LOG_ALL_REQUESTS, false);
     }

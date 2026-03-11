@@ -86,6 +86,10 @@ public final class app/revanced/patches/gamehub/network/cdn/UseSteamCdnPatchKt {
 	public static final fun getUseSteamCdnPatch ()Lapp/revanced/patcher/patch/Patch;
 }
 
+public final class app/revanced/patches/gamehub/steam/input/ForceSteamInputPatchKt {
+	public static final fun getForceSteamInputPatch ()Lapp/revanced/patcher/patch/Patch;
+}
+
 public final class app/revanced/patches/gamehub/steam/storage/SdCardStoragePatchKt {
 	public static final fun getSdCardStoragePatch ()Lapp/revanced/patcher/patch/Patch;
 }
