@@ -16,6 +16,7 @@ public class GameHubPrefs {
     public static final int CONTENT_TYPE_LOG_REQUESTS = 0x1b;
     public static final int CONTENT_TYPE_CPU_USAGE = 0x1c;
     public static final int CONTENT_TYPE_PERF_METRICS = 0x1d;
+    public static final int CONTENT_TYPE_MUTE_SOUNDS = 0x1e;
 
     private static final String PREFS_NAME = "steam_storage_pref";
     private static final String KEY_EXTERNAL_API = "use_external_api";
@@ -25,6 +26,7 @@ public class GameHubPrefs {
     private static final String KEY_LOG_ALL_REQUESTS = "log_all_requests";
     private static final String KEY_CPU_USAGE = "cpu_usage_display";
     private static final String KEY_PERF_METRICS = "perf_metrics_display";
+    private static final String KEY_MUTE_SOUNDS = "mute_ui_sounds";
 
     private static volatile boolean startupCheckDone = false;
 
@@ -56,6 +58,10 @@ public class GameHubPrefs {
 
     public static boolean isPerfMetricsEnabled() {
         return getPrefs().getBoolean(KEY_PERF_METRICS, true);
+    }
+
+    public static boolean isSoundMuted() {
+        return getPrefs().getBoolean(KEY_MUTE_SOUNDS, false);
     }
 
     public static void toggleAPI() {
@@ -148,6 +154,7 @@ public class GameHubPrefs {
         if (contentType == CONTENT_TYPE_LOG_REQUESTS) return isLogAllRequestsEnabled();
         if (contentType == CONTENT_TYPE_CPU_USAGE) return isCpuUsageEnabled();
         if (contentType == CONTENT_TYPE_PERF_METRICS) return isPerfMetricsEnabled();
+        if (contentType == CONTENT_TYPE_MUTE_SOUNDS) return isSoundMuted();
         return false;
     }
 
@@ -166,6 +173,7 @@ public class GameHubPrefs {
         if (contentType == CONTENT_TYPE_LOG_REQUESTS) return isLogAllRequestsEnabled();
         if (contentType == CONTENT_TYPE_CPU_USAGE) return isCpuUsageEnabled();
         if (contentType == CONTENT_TYPE_PERF_METRICS) return isPerfMetricsEnabled();
+        if (contentType == CONTENT_TYPE_MUTE_SOUNDS) return isSoundMuted();
         return defaultValue;
     }
 
@@ -232,6 +240,7 @@ public class GameHubPrefs {
         if (contentType == CONTENT_TYPE_LOG_REQUESTS) return "Log All Requests";
         if (contentType == CONTENT_TYPE_CPU_USAGE) return "CPU Usage Display";
         if (contentType == CONTENT_TYPE_PERF_METRICS) return "Performance Metrics";
+        if (contentType == CONTENT_TYPE_MUTE_SOUNDS) return "Mute UI Sounds";
         return null;
     }
 
@@ -278,6 +287,13 @@ public class GameHubPrefs {
             boolean newState = !isPerfMetricsEnabled();
             getPrefs().edit().putBoolean(KEY_PERF_METRICS, newState).apply();
             String msg = newState ? "Performance metrics enabled" : "Performance metrics disabled";
+            android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT)
+                    .show();
+            return newState;
+        } else if (contentType == CONTENT_TYPE_MUTE_SOUNDS) {
+            boolean newState = !isSoundMuted();
+            getPrefs().edit().putBoolean(KEY_MUTE_SOUNDS, newState).apply();
+            String msg = newState ? "UI sounds muted" : "UI sounds enabled";
             android.widget.Toast.makeText(Utils.a(), msg, android.widget.Toast.LENGTH_SHORT)
                     .show();
             return newState;

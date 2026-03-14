@@ -22,3 +22,4 @@ internal const val CONTENT_TYPE_API = 0x1a
 internal const val CONTENT_TYPE_LOG_REQUESTS = 0x1b
 internal const val CONTENT_TYPE_CPU_USAGE = 0x1c
 internal const val CONTENT_TYPE_PERF_METRICS = 0x1d
+internal const val CONTENT_TYPE_MUTE_SOUNDS = 0x1e
