@@ -61,27 +61,31 @@ private val rtsLayoutPatch = resourcePatch {
                     }
 
                     // RTS toggle switch (fills remaining space)
-                    container.appendChild(dom.createElement("com.xj.winemu.view.SidebarSwitchItemView").apply {
-                        setAttribute("android:id", "@id/switch_rts_touch_controls")
-                        setAttribute("android:layout_width", "0dp")
-                        setAttribute("android:layout_height", "@dimen/dp_56")
-                        setAttribute("android:layout_weight", "1")
-                        setAttribute("app:switch_title", "RTS Touch Controls")
-                    })
+                    container.appendChild(
+                        dom.createElement("com.xj.winemu.view.SidebarSwitchItemView").apply {
+                            setAttribute("android:id", "@id/switch_rts_touch_controls")
+                            setAttribute("android:layout_width", "0dp")
+                            setAttribute("android:layout_height", "@dimen/dp_56")
+                            setAttribute("android:layout_weight", "1")
+                            setAttribute("app:switch_title", "RTS Touch Controls")
+                        },
+                    )
 
                     // Gear button for gesture settings (initially hidden)
-                    container.appendChild(dom.createElement("ImageButton").apply {
-                        setAttribute("android:id", "@id/btn_rts_gesture_settings")
-                        setAttribute("android:layout_width", "@dimen/dp_40")
-                        setAttribute("android:layout_height", "@dimen/dp_40")
-                        setAttribute("android:layout_marginEnd", "@dimen/dp_8")
-                        setAttribute("android:background", "@android:color/transparent")
-                        setAttribute("android:src", "@drawable/ic_settings")
-                        setAttribute("android:scaleType", "centerInside")
-                        setAttribute("android:padding", "8dp")
-                        setAttribute("android:contentDescription", "RTS Gesture Settings")
-                        setAttribute("android:visibility", "gone")
-                    })
+                    container.appendChild(
+                        dom.createElement("ImageButton").apply {
+                            setAttribute("android:id", "@id/btn_rts_gesture_settings")
+                            setAttribute("android:layout_width", "@dimen/dp_40")
+                            setAttribute("android:layout_height", "@dimen/dp_40")
+                            setAttribute("android:layout_marginEnd", "@dimen/dp_8")
+                            setAttribute("android:background", "@android:color/transparent")
+                            setAttribute("android:src", "@drawable/ic_settings")
+                            setAttribute("android:scaleType", "centerInside")
+                            setAttribute("android:padding", "8dp")
+                            setAttribute("android:contentDescription", "RTS Gesture Settings")
+                            setAttribute("android:visibility", "gone")
+                        },
+                    )
 
                     // Insert after the touch screen mouse control switch
                     val nextSibling = el.nextSibling

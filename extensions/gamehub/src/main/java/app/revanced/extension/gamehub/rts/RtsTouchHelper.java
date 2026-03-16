@@ -270,8 +270,11 @@ public class RtsTouchHelper {
             panel.setBackground(panelBg);
             int maxH = (int) (context.getResources().getDisplayMetrics().heightPixels * 0.8f);
             FrameLayout.LayoutParams panelLp = new FrameLayout.LayoutParams(
-                    Math.min(dpToPx(context, 460), context.getResources().getDisplayMetrics().widthPixels - dpToPx(context, 32)),
-                    maxH, Gravity.CENTER);
+                    Math.min(
+                            dpToPx(context, 460),
+                            context.getResources().getDisplayMetrics().widthPixels - dpToPx(context, 32)),
+                    maxH,
+                    Gravity.CENTER);
             panel.setLayoutParams(panelLp);
             panel.setPadding(0, 0, 0, dpToPx(context, 16));
 
@@ -300,8 +303,7 @@ public class RtsTouchHelper {
             // Timing section divider
             View divider = new View(context);
             divider.setBackgroundColor(0x1AFFFFFF);
-            LinearLayout.LayoutParams divLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 1);
+            LinearLayout.LayoutParams divLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1);
             divLp.setMargins(0, dpToPx(context, 12), 0, dpToPx(context, 4));
             gestures.addView(divider, divLp);
 
@@ -315,23 +317,46 @@ public class RtsTouchHelper {
             gestures.addView(timingHeader);
 
             // Stepper rows
-            gestures.addView(createStepperRow(context, "Long Press",
-                    RtsTouchPrefs.TIMING_LONG_PRESS_MS, RtsTouchPrefs.DEFAULT_LONG_PRESS_MS,
-                    100, 1000, 50, "ms"));
-            gestures.addView(createStepperRow(context, "Double Tap",
-                    RtsTouchPrefs.TIMING_DOUBLE_TAP_MS, RtsTouchPrefs.DEFAULT_DOUBLE_TAP_MS,
-                    100, 500, 50, "ms"));
-            gestures.addView(createStepperRow(context, "Drag Threshold",
-                    RtsTouchPrefs.TIMING_DRAG_THRESHOLD, RtsTouchPrefs.DEFAULT_DRAG_THRESHOLD,
-                    5, 50, 5, "px"));
-            gestures.addView(createStepperRow(context, "Zoom Sensitivity",
-                    RtsTouchPrefs.TIMING_ZOOM_STEP, RtsTouchPrefs.DEFAULT_ZOOM_STEP,
-                    1, 20, 1, "px"));
+            gestures.addView(createStepperRow(
+                    context,
+                    "Long Press",
+                    RtsTouchPrefs.TIMING_LONG_PRESS_MS,
+                    RtsTouchPrefs.DEFAULT_LONG_PRESS_MS,
+                    100,
+                    1000,
+                    50,
+                    "ms"));
+            gestures.addView(createStepperRow(
+                    context,
+                    "Double Tap",
+                    RtsTouchPrefs.TIMING_DOUBLE_TAP_MS,
+                    RtsTouchPrefs.DEFAULT_DOUBLE_TAP_MS,
+                    100,
+                    500,
+                    50,
+                    "ms"));
+            gestures.addView(createStepperRow(
+                    context,
+                    "Drag Threshold",
+                    RtsTouchPrefs.TIMING_DRAG_THRESHOLD,
+                    RtsTouchPrefs.DEFAULT_DRAG_THRESHOLD,
+                    5,
+                    50,
+                    5,
+                    "px"));
+            gestures.addView(createStepperRow(
+                    context,
+                    "Zoom Sensitivity",
+                    RtsTouchPrefs.TIMING_ZOOM_STEP,
+                    RtsTouchPrefs.DEFAULT_ZOOM_STEP,
+                    1,
+                    20,
+                    1,
+                    "px"));
 
             scrollView.addView(gestures);
             // Weight=1 makes ScrollView fill remaining space and scroll when content overflows
-            panel.addView(scrollView, new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+            panel.addView(scrollView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
 
             // Close button
             TextView closeBtn = new TextView(context);
@@ -343,8 +368,8 @@ public class RtsTouchHelper {
             btnBg.setColor(COLOR_BLUE);
             btnBg.setCornerRadius(dpToPx(context, 4));
             closeBtn.setBackground(btnBg);
-            LinearLayout.LayoutParams btnLp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(context, 44));
+            LinearLayout.LayoutParams btnLp =
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(context, 44));
             int btnMargin = dpToPx(context, 24);
             btnLp.setMargins(btnMargin, dpToPx(context, 16), btnMargin, 0);
             closeBtn.setLayoutParams(btnLp);
@@ -366,7 +391,8 @@ public class RtsTouchHelper {
         }
     }
 
-    private static void addGestureRow(Context context, LinearLayout parent, Dialog mainDialog, RtsTouchPrefs.GestureDef def) {
+    private static void addGestureRow(
+            Context context, LinearLayout parent, Dialog mainDialog, RtsTouchPrefs.GestureDef def) {
         String gesture = def.key;
         boolean enabled = RtsTouchPrefs.isGestureEnabled(gesture);
 
@@ -379,9 +405,7 @@ public class RtsTouchHelper {
         CheckBox cb = new CheckBox(context);
         cb.setChecked(enabled);
         cb.setButtonTintList(new ColorStateList(
-                new int[][] { { android.R.attr.state_checked }, {} },
-                new int[] { COLOR_BLUE, COLOR_CHECKBOX_OFF }
-        ));
+                new int[][] {{android.R.attr.state_checked}, {}}, new int[] {COLOR_BLUE, COLOR_CHECKBOX_OFF}));
         final String g = gesture;
         cb.setOnCheckedChangeListener((v, isChecked) -> RtsTouchPrefs.setGestureEnabled(g, isChecked));
 
@@ -391,8 +415,7 @@ public class RtsTouchHelper {
         tv.setTextColor(COLOR_TEXT);
         tv.setTextSize(14);
         tv.setPadding(dpToPx(context, 8), 0, 0, 0);
-        tv.setLayoutParams(new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        tv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         row.addView(cb);
         row.addView(tv);
@@ -413,8 +436,7 @@ public class RtsTouchHelper {
         parent.addView(row);
     }
 
-    private static TextView createActionSpinner(
-            Context context, Dialog mainDialog, String gesture, String[] labels) {
+    private static TextView createActionSpinner(Context context, Dialog mainDialog, String gesture, String[] labels) {
         int currentAction = RtsTouchPrefs.getGestureAction(gesture);
 
         TextView spinner = new TextView(context);
@@ -438,8 +460,7 @@ public class RtsTouchHelper {
     /**
      * Shows a dark-themed action picker dialog with checkmark on the current selection.
      */
-    private static void showActionPicker(
-            Context context, String gesture, String[] labels, TextView spinnerToUpdate) {
+    private static void showActionPicker(Context context, String gesture, String[] labels, TextView spinnerToUpdate) {
         Dialog picker = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar);
 
         FrameLayout overlay = new FrameLayout(context);
@@ -474,8 +495,7 @@ public class RtsTouchHelper {
             text.setText(labels[i]);
             text.setTextColor(COLOR_TEXT);
             text.setTextSize(14);
-            text.setLayoutParams(new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+            text.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
             row.addView(text);
 
@@ -512,8 +532,7 @@ public class RtsTouchHelper {
      * Creates a stepper row: [ label ]  [ - ]  value  [ + ]
      */
     private static LinearLayout createStepperRow(
-            Context context, String label, String prefKey, int defaultVal,
-            int min, int max, int step, String unit) {
+            Context context, String label, String prefKey, int defaultVal, int min, int max, int step, String unit) {
         int current = RtsTouchPrefs.getTimingValue(prefKey, defaultVal);
 
         LinearLayout row = new LinearLayout(context);
@@ -526,8 +545,7 @@ public class RtsTouchHelper {
         labelTv.setText(label);
         labelTv.setTextColor(COLOR_TEXT);
         labelTv.setTextSize(13);
-        labelTv.setLayoutParams(new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        labelTv.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         // Value display
         TextView valueTv = new TextView(context);

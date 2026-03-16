@@ -68,7 +68,8 @@ public class CreditsHelper {
             credits.add(entry);
         }
         boolean added = entry.authors.putIfAbsent(author, url) == null;
-        GHLog.CREDITS.d("  → " + (added ? "added" : "DUPLICATE, skipped") + " (total authors=" + entry.authors.size() + ")");
+        GHLog.CREDITS.d(
+                "  → " + (added ? "added" : "DUPLICATE, skipped") + " (total authors=" + entry.authors.size() + ")");
     }
 
     /**

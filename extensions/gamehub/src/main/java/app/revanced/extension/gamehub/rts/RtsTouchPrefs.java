@@ -6,7 +6,6 @@ import app.revanced.extension.gamehub.util.GHLog;
 import com.blankj.utilcode.util.Utils;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 @SuppressWarnings("unused")
 public class RtsTouchPrefs {
@@ -52,12 +51,12 @@ public class RtsTouchPrefs {
     public static final String GESTURE_TWO_FINGER_DRAG = "TWO_FINGER_DRAG";
 
     static {
-        GESTURES.put(GESTURE_TAP,              new GestureDef(GESTURE_TAP,              "Tap",              "Left Click"));
-        GESTURES.put(GESTURE_LONG_PRESS,       new GestureDef(GESTURE_LONG_PRESS,       "Long Press",       "Right Click"));
-        GESTURES.put(GESTURE_DOUBLE_TAP,       new GestureDef(GESTURE_DOUBLE_TAP,       "Double Tap",       "Double Click"));
-        GESTURES.put(GESTURE_DRAG,             new GestureDef(GESTURE_DRAG,             "Drag",             "Mouse Drag"));
-        GESTURES.put(GESTURE_PINCH,            new GestureDef(GESTURE_PINCH,            "Pinch",            null));
-        GESTURES.put(GESTURE_TWO_FINGER_DRAG,  new GestureDef(GESTURE_TWO_FINGER_DRAG,  "Two-Finger Drag",  null));
+        GESTURES.put(GESTURE_TAP, new GestureDef(GESTURE_TAP, "Tap", "Left Click"));
+        GESTURES.put(GESTURE_LONG_PRESS, new GestureDef(GESTURE_LONG_PRESS, "Long Press", "Right Click"));
+        GESTURES.put(GESTURE_DOUBLE_TAP, new GestureDef(GESTURE_DOUBLE_TAP, "Double Tap", "Double Click"));
+        GESTURES.put(GESTURE_DRAG, new GestureDef(GESTURE_DRAG, "Drag", "Mouse Drag"));
+        GESTURES.put(GESTURE_PINCH, new GestureDef(GESTURE_PINCH, "Pinch", null));
+        GESTURES.put(GESTURE_TWO_FINGER_DRAG, new GestureDef(GESTURE_TWO_FINGER_DRAG, "Two-Finger Drag", null));
     }
 
     // ── Action options ───────────────────────────────────────────────────
@@ -118,8 +117,7 @@ public class RtsTouchPrefs {
 
     public static void setEnabled(boolean enabled) {
         getPrefs().edit().putBoolean(KEY_ENABLED, enabled).apply();
-        GHLog.RTS.d("RTS touch controls " + (enabled ? "enabled" : "disabled")
-                + " (profile=" + currentProfileId + ")");
+        GHLog.RTS.d("RTS touch controls " + (enabled ? "enabled" : "disabled") + " (profile=" + currentProfileId + ")");
     }
 
     public static boolean isGestureEnabled(String gesture) {
@@ -127,7 +125,10 @@ public class RtsTouchPrefs {
     }
 
     public static void setGestureEnabled(String gesture, boolean enabled) {
-        getPrefs().edit().putBoolean(KEY_GESTURE_ENABLED_PREFIX + gesture, enabled).apply();
+        getPrefs()
+                .edit()
+                .putBoolean(KEY_GESTURE_ENABLED_PREFIX + gesture, enabled)
+                .apply();
     }
 
     public static int getGestureAction(String gesture) {
