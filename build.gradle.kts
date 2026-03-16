@@ -8,12 +8,15 @@ allprojects {
         if (path.startsWith(":extensions:")) {
             java {
                 target("src/**/*.java")
-                googleJavaFormat().aosp()
+                toggleOffOn()
+                palantirJavaFormat()
+                importOrder("android", "androidx", "", "java", "javax")
             }
         }
         if (path == ":patches") {
             kotlin {
                 target("src/**/*.kt")
+                toggleOffOn()
                 ktlint()
             }
         }
@@ -106,5 +109,10 @@ allprojects {
     tasks.withType(JavaCompile::class) {
         options.compilerArgs.add("-Xlint:unchecked")
         options.compilerArgs.add("-Xlint:deprecation")
+    }
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xskip-prerelease-check")
+        }
     }
 }
