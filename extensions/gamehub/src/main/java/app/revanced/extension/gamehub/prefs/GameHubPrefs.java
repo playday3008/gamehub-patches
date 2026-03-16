@@ -17,6 +17,7 @@ public class GameHubPrefs {
     public static final int CONTENT_TYPE_CPU_USAGE = 0x1c;
     public static final int CONTENT_TYPE_PERF_METRICS = 0x1d;
     public static final int CONTENT_TYPE_MUTE_SOUNDS = 0x1e;
+    public static final int CONTENT_TYPE_CREDITS = 0x1f;
 
     private static final String PREFS_NAME = "steam_storage_pref";
     private static final String KEY_EXTERNAL_API = "use_external_api";
@@ -241,6 +242,7 @@ public class GameHubPrefs {
         if (contentType == CONTENT_TYPE_CPU_USAGE) return "CPU Usage Display";
         if (contentType == CONTENT_TYPE_PERF_METRICS) return "Performance Metrics";
         if (contentType == CONTENT_TYPE_MUTE_SOUNDS) return "Mute UI Sounds";
+        if (contentType == CONTENT_TYPE_CREDITS) return "Credits";
         return null;
     }
 

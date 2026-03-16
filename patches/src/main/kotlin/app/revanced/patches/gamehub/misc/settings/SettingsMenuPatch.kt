@@ -211,3 +211,55 @@ internal fun addSteamSetting(
     )
     viewModelInsertionIndex += 10
 }
+
+/**
+ * Registers a new button item in the Steam settings menu.
+ *
+ * Must be called from within a patch's execute block that depends on [settingsMenuPatch].
+ * Performs two injections:
+ *  1. Adds a named constant field to [SettingItemEntity].
+ *  2. Appends a TYPE_BTN entry to [SettingItemViewModel.l()].
+ *
+ * Click handling must be done by the calling patch via [SettingBtnHolder.w()].
+ *
+ * @param contentType  The integer content-type constant (e.g. 0x1f).
+ * @param fieldName    The static field name to add to SettingItemEntity.
+ */
+context(_: BytecodePatchContext)
+internal fun addSteamButton(
+    contentType: Int,
+    fieldName: String,
+) {
+    val hexType = "0x${contentType.toString(16)}"
+
+    // 1. Add a named constant to SettingItemEntity.
+    entityMutableClass.staticFields.add(
+        ImmutableField(
+            ENTITY_CLASS,
+            fieldName,
+            "I",
+            AccessFlags.PUBLIC.value or AccessFlags.STATIC.value or AccessFlags.FINAL.value,
+            ImmutableIntEncodedValue(contentType),
+            emptySet(),
+            null,
+        ).toMutable(),
+    )
+
+    // 2. Inject a TYPE_BTN (3) list entry into SettingItemViewModel.l().
+    //    Same constructor as TYPE_SWITCH but with type=3 and enabled=true.
+    settingItemViewModelMethod.addInstructions(
+        viewModelInsertionIndex,
+        """
+            new-instance v0, $ENTITY_CLASS
+            const/4 v1, 0x3
+            const/16 v2, $hexType
+            const/4 v3, 0x0
+            const/4 v4, 0x1
+            const/16 v5, 0x4
+            const/4 v6, 0x0
+            invoke-direct/range {v0 .. v6}, $ENTITY_CLASS-><init>(IILandroid/util/SparseArray;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+            invoke-interface {p0, v0}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+        """,
+    )
+    viewModelInsertionIndex += 9
+}

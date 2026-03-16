@@ -42,6 +42,10 @@ public final class app/revanced/patches/gamehub/misc/cleanup/PromoRemovalPatchKt
 	public static final fun getPopupRemovalPatch ()Lapp/revanced/patcher/patch/Patch;
 }
 
+public final class app/revanced/patches/gamehub/misc/credits/CreditsPatchKt {
+	public static final fun getCreditsPatch ()Lapp/revanced/patcher/patch/Patch;
+}
+
 public final class app/revanced/patches/gamehub/misc/debugstrings/TranslateDebugStringsPatchKt {
 	public static final fun getTranslateDebugStringsPatch ()Lapp/revanced/patcher/patch/Patch;
 }

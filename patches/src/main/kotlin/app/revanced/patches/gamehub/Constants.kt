@@ -15,6 +15,7 @@ internal const val EXTENSION_STEAM_CDN_HELPER = "Lapp/revanced/extension/gamehub
 internal const val EXTENSION_CPU_HELPER = "Lapp/revanced/extension/gamehub/ui/CpuUsageHelper;"
 internal const val EXTENSION_PERF_METRICS = "Lapp/revanced/extension/gamehub/ui/PerformanceMetricsHelper;"
 internal const val EXTENSION_PLAYTIME_HELPER = "Lapp/revanced/extension/gamehub/playtime/PlaytimeHelper;"
+internal const val EXTENSION_CREDITS_HELPER = "Lapp/revanced/extension/gamehub/ui/CreditsHelper;"
 
 // Content-type constants for custom settings menu items
 internal const val CONTENT_TYPE_SD_CARD_STORAGE = 0x18
@@ -23,3 +24,4 @@ internal const val CONTENT_TYPE_LOG_REQUESTS = 0x1b
 internal const val CONTENT_TYPE_CPU_USAGE = 0x1c
 internal const val CONTENT_TYPE_PERF_METRICS = 0x1d
 internal const val CONTENT_TYPE_MUTE_SOUNDS = 0x1e
+internal const val CONTENT_TYPE_CREDITS = 0x1f
