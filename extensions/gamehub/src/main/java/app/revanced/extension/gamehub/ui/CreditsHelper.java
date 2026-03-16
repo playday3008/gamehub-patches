@@ -60,13 +60,15 @@ public class CreditsHelper {
      * @param url     the author URL (empty string if none)
      */
     public static void addCredit(String feature, String author, String url) {
+        GHLog.CREDITS.d("addCredit: feature=" + feature + " author=" + author + " url=" + url);
         CreditEntry entry = creditsByFeature.get(feature);
         if (entry == null) {
             entry = new CreditEntry(feature);
             creditsByFeature.put(feature, entry);
             credits.add(entry);
         }
-        entry.authors.putIfAbsent(author, url);
+        boolean added = entry.authors.putIfAbsent(author, url) == null;
+        GHLog.CREDITS.d("  → " + (added ? "added" : "DUPLICATE, skipped") + " (total authors=" + entry.authors.size() + ")");
     }
 
     /**
