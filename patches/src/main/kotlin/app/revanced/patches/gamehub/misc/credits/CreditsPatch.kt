@@ -134,6 +134,10 @@ val creditsPatch = bytecodePatch(
  * Each call injects smali into [SettingItemViewModel.l] that calls
  * [CreditsHelper.addCredit] at runtime.
  *
+ * Multiple calls with the same [feature] name merge their authors (the extension
+ * accumulates them into a single entry), so multi-author credits are supported
+ * without creating objects in smali.
+ *
  * @param feature the feature or patch name
  * @param authors one or more `"Author Name" to "https://url"` pairs
  *                (use empty string or `null` for no URL)
@@ -143,24 +147,18 @@ internal fun addCredit(
     feature: String,
     vararg authors: Pair<String, String?>,
 ) {
-    // Build smali that creates a LinkedHashMap, puts each author, then calls addCredit.
-    val putSmali = authors.joinToString("\n") { (name, url) ->
-        """
-            const-string v1, "$name"
-            const-string v2, "${url ?: ""}"
-            invoke-interface {v0, v1, v2}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
-        """
+    // Emit one invoke-static per author — no object allocation in smali.
+    // The extension merges authors that share the same feature name.
+    for ((name, url) in authors) {
+        creditsMethod.addInstructions(
+            creditsInsertionIndex,
+            """
+                const-string v0, "$feature"
+                const-string v1, "$name"
+                const-string v2, "${url ?: ""}"
+                invoke-static {v0, v1, v2}, $EXTENSION->addCredit(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+            """,
+        )
+        creditsInsertionIndex += 4
     }
-    creditsMethod.addInstructions(
-        creditsInsertionIndex,
-        """
-            new-instance v0, Ljava/util/LinkedHashMap;
-            invoke-direct {v0}, Ljava/util/LinkedHashMap;-><init>()V
-            $putSmali
-            const-string v1, "$feature"
-            invoke-static {v1, v0}, $EXTENSION->addCredit(Ljava/lang/String;Ljava/util/Map;)V
-        """,
-    )
-    // 2 (new + init) + 3 per author (const, const, put) + 2 (const feature + invoke)
-    creditsInsertionIndex += 4 + (authors.size * 3)
 }

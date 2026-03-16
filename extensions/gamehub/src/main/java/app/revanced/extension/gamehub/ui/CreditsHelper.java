@@ -39,17 +39,26 @@ public class CreditsHelper {
     private static final List<Object[]> credits = new ArrayList<>();
 
     /**
-     * Registers a credit entry. Duplicate feature names are ignored.
+     * Registers a credit entry. Multiple calls with the same feature name
+     * merge their authors into a single entry (preserving insertion order).
      * Called from injected smali in SettingItemViewModel.l().
      *
      * @param feature the feature/patch name
-     * @param authors map of author name to URL (empty string if no URL)
+     * @param author  the author name
+     * @param url     the author URL (empty string if none)
      */
-    public static void addCredit(String feature, Map<String, String> authors) {
+    @SuppressWarnings("unchecked")
+    public static void addCredit(String feature, String author, String url) {
         for (Object[] entry : credits) {
-            if (entry[0].equals(feature)) return;
+            if (entry[0].equals(feature)) {
+                Map<String, String> authors = (Map<String, String>) entry[1];
+                authors.putIfAbsent(author, url);
+                return;
+            }
         }
-        credits.add(new Object[]{feature, authors});
+        Map<String, String> authors = new java.util.LinkedHashMap<>();
+        authors.put(author, url);
+        credits.add(new Object[] {feature, authors});
     }
 
     /**
@@ -120,8 +129,8 @@ public class CreditsHelper {
         scroll.addView(list, matchWrap());
 
         // Give the scroll area weight so it can shrink if the dialog is too tall.
-        LinearLayout.LayoutParams scrollParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f);
+        LinearLayout.LayoutParams scrollParams =
+                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f);
         root.addView(scroll, scrollParams);
 
         // OK button.
@@ -182,8 +191,8 @@ public class CreditsHelper {
     private static View createDivider(Context ctx, int topMargin, int bottomMargin) {
         View divider = new View(ctx);
         divider.setBackgroundColor(COLOR_DIVIDER);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(ctx, 1));
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(ctx, 1));
         params.topMargin = topMargin;
         params.bottomMargin = bottomMargin;
         divider.setLayoutParams(params);
