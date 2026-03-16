@@ -450,6 +450,7 @@ public class MTDataFilesProvider extends DocumentsProvider {
 
         int flags = 0;
         if (file.isDirectory()) {
+            flags |= Document.FLAG_DIR_PREFERS_LAST_MODIFIED;
             if (file.canWrite()) {
                 flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
             }
