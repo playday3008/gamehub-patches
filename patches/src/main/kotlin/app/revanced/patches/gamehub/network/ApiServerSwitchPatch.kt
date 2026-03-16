@@ -14,6 +14,8 @@ import app.revanced.patches.gamehub.CONTENT_TYPE_LOG_REQUESTS
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.errorhandling.errorHandlingPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
@@ -39,7 +41,7 @@ val apiServerSwitchPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(sharedGamehubExtensionPatch, errorHandlingPatch, settingsMenuPatch, tokenResolutionPatch)
+    dependsOn(sharedGamehubExtensionPatch, errorHandlingPatch, settingsMenuPatch, tokenResolutionPatch, creditsPatch)
 
     apply {
         addSteamSetting(CONTENT_TYPE_API, "CONTENT_TYPE_API")
@@ -312,5 +314,7 @@ val apiServerSwitchPatch = bytecodePatch(
                 ExternalLabel("skip_logout", getInstruction(buildErrorResponseIndex)),
             )
         }
+
+        addCredit("API server switch", "PlayDay" to "https://github.com/playday3008")
     }
 }

@@ -7,6 +7,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.EXTENSION_COMPAT_CACHE
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -20,7 +22,7 @@ val compatibilityFallbackPatch = bytecodePatch(
     description = "Shows cached compatibility data in game details when the API fails.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
-    dependsOn(sharedGamehubExtensionPatch)
+    dependsOn(sharedGamehubExtensionPatch, creditsPatch)
 
     apply {
         // ── 1. Cache SimpleGameCompatibility during game list loading ──
@@ -115,5 +117,7 @@ val compatibilityFallbackPatch = bytecodePatch(
             replaceInstruction(rCallIndex, "const/4 v11, 0x1")
             replaceInstruction(rCallIndex + 1, "nop")
         }
+
+        addCredit("Compatibility fallback", "PlayDay" to "https://github.com/playday3008")
     }
 }

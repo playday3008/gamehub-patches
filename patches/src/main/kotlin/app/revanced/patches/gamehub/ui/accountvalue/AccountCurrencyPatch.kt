@@ -6,6 +6,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.EXTENSION_CURRENCY_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -20,7 +22,7 @@ val accountCurrencyPatch = bytecodePatch(
         "in the Steam account value and game price labels.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
-    dependsOn(sharedGamehubExtensionPatch)
+    dependsOn(sharedGamehubExtensionPatch, creditsPatch)
 
     apply {
         // Injection A: Capture the currency string from every PICS price conversion.
@@ -89,5 +91,7 @@ val accountCurrencyPatch = bytecodePatch(
                 """,
             )
         }
+
+        addCredit("Account currency display", "PlayDay" to "https://github.com/playday3008")
     }
 }

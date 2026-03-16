@@ -4,6 +4,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.asSequence
 import app.revanced.util.getNode
 import org.w3c.dom.Element
@@ -205,7 +207,7 @@ val manifestCleanupPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(manifestCleanupResourcePatch)
+    dependsOn(manifestCleanupResourcePatch, creditsPatch)
 
     apply {
         // Remove payment/auth/unused SDK class trees from DEX.
@@ -221,5 +223,7 @@ val manifestCleanupPatch = bytecodePatch(
                 type.startsWith("Lcom/alipay/") ||
                 type.startsWith("Lcom/mobile/auth/")
         }
+
+        addCredit("Manifest cleanup", "PlayDay" to "https://github.com/playday3008")
     }
 }

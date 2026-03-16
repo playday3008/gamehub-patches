@@ -9,6 +9,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.EXTENSION_PLAYTIME_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -18,7 +20,7 @@ val steamPlaytimePatch = bytecodePatch(
     name = "Steam playtime",
     description = "Reads game playtime from the local Steam database instead of GameHub's server.",
 ) {
-    dependsOn(sharedGamehubExtensionPatch)
+    dependsOn(sharedGamehubExtensionPatch, creditsPatch)
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     apply {
@@ -46,5 +48,7 @@ val steamPlaytimePatch = bytecodePatch(
                 ExternalLabel("original", getInstruction(apiStringIndex)),
             )
         }
+
+        addCredit("Steam playtime", "PlayDay" to "https://github.com/playday3008")
     }
 }

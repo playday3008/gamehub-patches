@@ -4,6 +4,8 @@ import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.returnEarly
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
@@ -13,6 +15,8 @@ val disableCloudTimerPatch = bytecodePatch(
     description = "Removes cloud gaming timer checks that cause crashes.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
+
+    dependsOn(creditsPatch)
 
     apply {
         // HomeInfoRepository.b(Function1) — obfuscated name for checkUserTimer.
@@ -32,5 +36,7 @@ val disableCloudTimerPatch = bytecodePatch(
                         instruction.reference.toString().contains("CloudGameInfoRepository\$checkUserTimer")
                 } == true
         }.returnEarly()
+
+        addCredit("Disable cloud gaming timer", "Producdevity" to "https://github.com/Producdevity/gamehub-lite")
     }
 }

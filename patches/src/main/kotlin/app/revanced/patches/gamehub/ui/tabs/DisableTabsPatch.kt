@@ -5,6 +5,8 @@ import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -17,6 +19,7 @@ val disableTabsPatch = bytecodePatch(
     description = "Hides the Discover and Find games tabs from the main launcher.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
+    dependsOn(creditsPatch)
 
     apply {
         firstMethod {
@@ -53,5 +56,11 @@ val disableTabsPatch = bytecodePatch(
             removeInstruction(findGamesAddIndex)
             removeInstruction(discoverAddIndex)
         }
+
+        addCredit(
+            "Disable Discover and Find games tabs",
+            "PlayDay" to "https://github.com/playday3008",
+            "Producdevity" to "https://github.com/Producdevity/gamehub-lite",
+        )
     }
 }

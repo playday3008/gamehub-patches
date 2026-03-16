@@ -6,6 +6,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.network.apiServerSwitchPatch
 
 @Suppress("unused")
@@ -17,7 +19,7 @@ val forceSteamInputPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(apiServerSwitchPatch)
+    dependsOn(apiServerSwitchPatch, creditsPatch)
 
     apply {
         // SteamGameInfo.p() returns field 'r' (steamInputEnable).
@@ -39,5 +41,7 @@ val forceSteamInputPatch = bytecodePatch(
                 return p0
             """,
         )
+
+        addCredit("Force Steam Input", "PlayDay" to "https://github.com/playday3008")
     }
 }

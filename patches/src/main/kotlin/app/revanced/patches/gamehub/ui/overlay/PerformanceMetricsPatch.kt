@@ -7,6 +7,8 @@ import app.revanced.patches.gamehub.CONTENT_TYPE_PERF_METRICS
 import app.revanced.patches.gamehub.EXTENSION_PERF_METRICS
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
@@ -21,7 +23,7 @@ val performanceMetricsPatch = bytecodePatch(
     description = "Adds CPU, GPU, and RAM usage metrics to the Performance tab of the game overlay.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
-    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch)
+    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch, creditsPatch)
 
     apply {
         // Inject into SidebarPerformanceFragment.m0(Bundle)V before return-void.
@@ -51,5 +53,7 @@ val performanceMetricsPatch = bytecodePatch(
 
         // Register toggle in Steam settings menu.
         addSteamSetting(CONTENT_TYPE_PERF_METRICS, "CONTENT_TYPE_PERF_METRICS")
+
+        addCredit("Performance metrics display", "PlayDay" to "https://github.com/playday3008")
     }
 }

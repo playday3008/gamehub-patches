@@ -12,6 +12,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.EXTENSION_STEAM_CDN_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -21,7 +23,7 @@ val useSteamCdnPatch = bytecodePatch(
     name = "Use Steam CDN for assets",
     description = "Replaces the third-party bigeyes CDN with Steam's official CDN for game header images.",
 ) {
-    dependsOn(sharedGamehubExtensionPatch)
+    dependsOn(sharedGamehubExtensionPatch, creditsPatch)
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
     apply {
@@ -143,5 +145,7 @@ val useSteamCdnPatch = bytecodePatch(
                     name == "getCoverImagePath"
             },
         )
+
+        addCredit("Use Steam CDN for assets", "PlayDay" to "https://github.com/playday3008")
     }
 }

@@ -8,6 +8,8 @@ import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.EXTENSION_GAME_ID_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.asSequence
 import org.w3c.dom.Element
@@ -118,7 +120,7 @@ val gameIdDisplayPatch = bytecodePatch(
     description = "Displays a copyable game ID in the game detail screen.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
-    dependsOn(sharedGamehubExtensionPatch, gameIdLayoutPatch)
+    dependsOn(sharedGamehubExtensionPatch, gameIdLayoutPatch, creditsPatch)
 
     apply {
         // The return-void in onCreate has the :cond_0 label on it (the logged-in branch jumps there).
@@ -134,5 +136,7 @@ val gameIdDisplayPatch = bytecodePatch(
             )
             addInstruction(returnIndex + 1, "return-void")
         }
+
+        addCredit("Game ID display", "PlayDay" to "https://github.com/playday3008")
     }
 }

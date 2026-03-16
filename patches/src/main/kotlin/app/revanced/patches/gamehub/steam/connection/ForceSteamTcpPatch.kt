@@ -7,6 +7,8 @@ import app.revanced.patcher.firstMethodOrNull
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -19,6 +21,8 @@ internal val forceSteamTcpPatch = bytecodePatch(
             "to avoid TLS issues with custom network security configs.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
+
+    dependsOn(creditsPatch)
 
     apply {
         // No-op when JavaSteam classes aren't present (safe for non-GameHub apps).
@@ -51,5 +55,7 @@ internal val forceSteamTcpPatch = bytecodePatch(
                 ExternalLabel("skip_websocket", getInstruction(gotoIndex)),
             )
         }
+
+        addCredit("Force Steam TCP", "PlayDay" to "https://github.com/playday3008")
     }
 }

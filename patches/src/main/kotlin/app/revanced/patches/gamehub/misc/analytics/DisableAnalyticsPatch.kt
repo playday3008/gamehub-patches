@@ -5,6 +5,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.stability.appNullSafetyPatch
 import app.revanced.util.asSequence
 import app.revanced.util.returnEarly
@@ -105,7 +107,7 @@ val disableAnalyticsPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(analyticsCleanupResourcePatch, appNullSafetyPatch)
+    dependsOn(analyticsCleanupResourcePatch, appNullSafetyPatch, creditsPatch)
 
     apply {
         // Umeng — disable wrapper methods in app code.
@@ -132,5 +134,11 @@ val disableAnalyticsPatch = bytecodePatch(
                 type.startsWith("Lcom/google/firebase/") ||
                 type.startsWith("Lcom/uc/crashsdk/")
         }
+
+        addCredit(
+            "Disable analytics",
+            "PlayDay" to "https://github.com/playday3008",
+            "Producdevity" to "https://github.com/Producdevity/gamehub-lite",
+        )
     }
 }

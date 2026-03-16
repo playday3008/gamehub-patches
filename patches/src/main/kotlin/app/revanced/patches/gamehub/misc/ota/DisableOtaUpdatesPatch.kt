@@ -6,6 +6,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
@@ -31,7 +33,7 @@ val disableOtaUpdatesPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(otaCleanupResourcePatch)
+    dependsOn(otaCleanupResourcePatch, creditsPatch)
 
     apply {
         firstMethod("https://www.xiaoji.com/firmware/update/x1/").apply {
@@ -43,5 +45,11 @@ val disableOtaUpdatesPatch = bytecodePatch(
             // Override the URL string with empty string so OTA calls fail silently
             addInstruction(urlIndex + 1, "const-string p1, \"http://127.0.0.1\"")
         }
+
+        addCredit(
+            "Disable OTA updates",
+            "Producdevity" to "https://github.com/Producdevity/gamehub-lite",
+            "PlayDay" to "https://github.com/playday3008",
+        )
     }
 }

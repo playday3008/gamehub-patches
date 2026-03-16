@@ -21,6 +21,11 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.immutable.ImmutableField
 import com.android.tools.smali.dexlib2.immutable.value.ImmutableIntEncodedValue
 
+// Recurring author pairs.
+private val PLAYDAY = "PlayDay" to "https://github.com/playday3008"
+private val PRODUCDEVITY = "Producdevity" to "https://github.com/Producdevity/gamehub-lite"
+private val REVANCED = "ReVanced Contributors" to "https://github.com/revanced"
+
 private const val ENTITY_CLASS = "Lcom/xj/landscape/launcher/data/model/entity/SettingItemEntity;"
 private const val VIEW_MODEL_CLASS = "Lcom/xj/landscape/launcher/vm/SettingItemViewModel;"
 private const val BTN_HOLDER_CLASS = "Lcom/xj/landscape/launcher/ui/setting/holder/SettingBtnHolder;"
@@ -102,7 +107,7 @@ val creditsPatch = bytecodePatch(
         // first at runtime (populating CreditsHelper's list before the dialog can be shown).
         creditsInsertionIndex = returnIndex
 
-        // Default credits.
+        // Project credits.
         addCredit(
             "GameHub Revanced",
             "PlayDay" to "https://github.com/playday3008/gamehub-patches",
@@ -111,6 +116,14 @@ val creditsPatch = bytecodePatch(
             "GameHub Lite",
             "Producdevity" to "https://github.com/Producdevity/gamehub-lite",
         )
+
+        // Credits for resource/generic patches that cannot depend on creditsPatch.
+        addCredit("Change app name", PLAYDAY)
+        addCredit("Custom network security", REVANCED)
+        addCredit("Enable Android debugging", REVANCED)
+        addCredit("Override certificate pinning", REVANCED)
+        addCredit("Change package name", REVANCED)
+        addCredit("File manager access", "MT Manager" to null, PLAYDAY, REVANCED)
     }
 }
 

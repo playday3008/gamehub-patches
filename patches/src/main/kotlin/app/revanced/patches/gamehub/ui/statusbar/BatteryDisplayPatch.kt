@@ -7,6 +7,8 @@ import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.EXTENSION_BATTERY_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.util.asSequence
 import app.revanced.util.indexOfFirstInstructionOrThrow
@@ -95,7 +97,7 @@ val batteryDisplayPatch = bytecodePatch(
     description = "Adds a battery percentage text next to the battery icon.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
-    dependsOn(sharedGamehubExtensionPatch, batteryLayoutPatch)
+    dependsOn(sharedGamehubExtensionPatch, batteryLayoutPatch, creditsPatch)
 
     apply {
         // BatteryUtil.a(Context, ImageView): after getIntProperty returns battery level
@@ -121,5 +123,7 @@ val batteryDisplayPatch = bytecodePatch(
                 """,
             )
         }
+
+        addCredit("Battery percentage display", "PlayDay" to "https://github.com/playday3008")
     }
 }

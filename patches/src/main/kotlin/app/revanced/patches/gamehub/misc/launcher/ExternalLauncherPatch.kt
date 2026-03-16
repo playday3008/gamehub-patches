@@ -7,6 +7,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.asSequence
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -52,7 +54,7 @@ val externalLauncherPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(externalLauncherResourcePatch)
+    dependsOn(externalLauncherResourcePatch, creditsPatch)
 
     apply {
         // External launchers send an intent with steamAppId/localGameId/autoStartGame extras
@@ -72,5 +74,7 @@ val externalLauncherPatch = bytecodePatch(
             val defaultReg = getInstruction<OneRegisterInstruction>(typeIndex + 1).registerA
             replaceInstruction(typeIndex + 1, "const-string v$defaultReg, \"0\"")
         }
+
+        addCredit("External launcher support", "PlayDay" to "https://github.com/playday3008")
     }
 }

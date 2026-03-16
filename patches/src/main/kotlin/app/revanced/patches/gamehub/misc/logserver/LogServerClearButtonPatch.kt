@@ -6,6 +6,8 @@ import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.getReference
 import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
@@ -18,6 +20,8 @@ val logServerClearButtonPatch = bytecodePatch(
     description = "Adds a Clear Logs button to the WinEmu log HTTP server page.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
+
+    dependsOn(creditsPatch)
 
     apply {
         firstMethod {
@@ -84,5 +88,7 @@ val logServerClearButtonPatch = bytecodePatch(
 
             replaceInstruction(htmlIndex, "const-string v$register, \"$escapedHtml\"")
         }
+
+        addCredit("Log server clear button", "PlayDay" to "https://github.com/playday3008")
     }
 }

@@ -5,6 +5,8 @@ import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.returnEarly
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 
@@ -15,6 +17,8 @@ val disableHeartbeatPatch = bytecodePatch(
         "(heartbeat/game/start, update, end).",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
+
+    dependsOn(creditsPatch)
 
     apply {
         // WineGameUsageTracker periodic heartbeats.
@@ -67,6 +71,12 @@ val disableHeartbeatPatch = bytecodePatch(
                 invoke-direct {v0, v1, v2}, Lkotlin/Pair;-><init>(Ljava/lang/Object;Ljava/lang/Object;)V
                 return-object v0
             """,
+        )
+
+        addCredit(
+            "Disable heartbeat",
+            "Producdevity" to "https://github.com/Producdevity/gamehub-lite",
+            "PlayDay" to "https://github.com/playday3008",
         )
     }
 }

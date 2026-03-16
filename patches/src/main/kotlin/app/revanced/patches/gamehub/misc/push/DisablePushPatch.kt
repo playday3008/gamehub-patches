@@ -6,6 +6,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.stability.appNullSafetyPatch
 import app.revanced.util.asSequence
 import app.revanced.util.returnEarly
@@ -60,7 +62,7 @@ val disablePushPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(appNullSafetyPatch, disablePushManifestPatch)
+    dependsOn(appNullSafetyPatch, disablePushManifestPatch, creditsPatch)
 
     apply {
         firstMethod { definingClass == "Lcom/xj/push/PushApp;" && name == "b" }.returnEarly()
@@ -86,5 +88,11 @@ val disablePushPatch = bytecodePatch(
 
         // Remove JPush SDK class tree from DEX.
         classDefs.removeIf { it.type.startsWith("Lcn/jpush/") }
+
+        addCredit(
+            "Disable push notifications",
+            "PlayDay" to "https://github.com/playday3008",
+            "Producdevity" to "https://github.com/Producdevity/gamehub-lite",
+        )
     }
 }

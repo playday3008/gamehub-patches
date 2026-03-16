@@ -5,6 +5,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
@@ -494,7 +496,7 @@ val translateDebugStringsPatch = bytecodePatch(
     description = "Translates Chinese strings in debug-related screens and log messages to English.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
-    dependsOn(debugStringsLayoutPatch)
+    dependsOn(debugStringsLayoutPatch, creditsPatch)
 
     apply {
         // Scan every class in the dex for matching const-string instructions.
@@ -530,5 +532,7 @@ val translateDebugStringsPatch = bytecodePatch(
                     }
                 }
             }
+
+        addCredit("Translate debug strings", "PlayDay" to "https://github.com/playday3008")
     }
 }

@@ -8,6 +8,8 @@ import app.revanced.patches.gamehub.CONTENT_TYPE_CPU_USAGE
 import app.revanced.patches.gamehub.EXTENSION_CPU_HELPER
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
@@ -86,7 +88,7 @@ val cpuDisplayPatch = bytecodePatch(
     description = "Adds a CPU usage percentage text before the clock.",
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
-    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch, cpuLayoutPatch)
+    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch, cpuLayoutPatch, creditsPatch)
 
     apply {
         // Hook BatteryUtil.a(Context, ImageView) before RETURN_VOID.
@@ -113,5 +115,7 @@ val cpuDisplayPatch = bytecodePatch(
 
         // Register toggle in Steam settings menu.
         addSteamSetting(CONTENT_TYPE_CPU_USAGE, "CONTENT_TYPE_CPU_USAGE")
+
+        addCredit("CPU usage display", "PlayDay" to "https://github.com/playday3008")
     }
 }

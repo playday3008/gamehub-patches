@@ -7,6 +7,8 @@ import app.revanced.patches.gamehub.CONTENT_TYPE_MUTE_SOUNDS
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
@@ -30,7 +32,7 @@ val muteUiSoundsPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch)
+    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch, creditsPatch)
 
     apply {
         addSteamSetting(CONTENT_TYPE_MUTE_SOUNDS, "CONTENT_TYPE_MUTE_SOUNDS")
@@ -48,5 +50,7 @@ val muteUiSoundsPatch = bytecodePatch(
                     parameterTypes.isEmpty()
             }.addInstructions(0, MUTE_GUARD)
         }
+
+        addCredit("Mute UI sounds", "PlayDay" to "https://github.com/playday3008")
     }
 }

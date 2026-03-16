@@ -5,6 +5,8 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.returnEarly
 import org.w3c.dom.Element
 
@@ -27,12 +29,14 @@ val popupRemovalPatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(hideCommunityBannerPatch)
+    dependsOn(hideCommunityBannerPatch, creditsPatch)
 
     apply {
         firstMethod {
             definingClass == "Lcom/xj/landscape/launcher/view/popup/PromotionalDialogFragment;" &&
                 name == "initView"
         }.returnEarly()
+
+        addCredit("Remove promotional materials", "PlayDay" to "https://github.com/playday3008")
     }
 }

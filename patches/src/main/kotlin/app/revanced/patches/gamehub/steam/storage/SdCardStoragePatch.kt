@@ -8,6 +8,8 @@ import app.revanced.patches.gamehub.CONTENT_TYPE_SD_CARD_STORAGE
 import app.revanced.patches.gamehub.EXTENSION_PREFS
 import app.revanced.patches.gamehub.GAMEHUB_PACKAGE
 import app.revanced.patches.gamehub.GAMEHUB_VERSION
+import app.revanced.patches.gamehub.misc.credits.addCredit
+import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.patches.gamehub.misc.extension.sharedGamehubExtensionPatch
 import app.revanced.patches.gamehub.misc.settings.addSteamSetting
 import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
@@ -27,7 +29,7 @@ val sdCardStoragePatch = bytecodePatch(
 ) {
     compatibleWith(GAMEHUB_PACKAGE(GAMEHUB_VERSION))
 
-    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch)
+    dependsOn(sharedGamehubExtensionPatch, settingsMenuPatch, creditsPatch)
 
     apply {
         addSteamSetting(CONTENT_TYPE_SD_CARD_STORAGE, "CONTENT_TYPE_SD_CARD_STORAGE")
@@ -113,5 +115,7 @@ val sdCardStoragePatch = bytecodePatch(
                 """,
             )
         }
+
+        addCredit("SD card Steam storage", "Producdevity" to "https://github.com/Producdevity/gamehub-lite")
     }
 }
