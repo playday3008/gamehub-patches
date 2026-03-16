@@ -17,7 +17,8 @@ public enum GHLog {
     PERF("Perf"),
     PLAYTIME("Playtime"),
     SOUND("Sound"),
-    CREDITS("Credits");
+    CREDITS("Credits"),
+    RTS("RTS");
 
     private static final String PREFIX = "GHL/";
     private final String tag;

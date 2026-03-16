@@ -26,3 +26,6 @@ internal const val CONTENT_TYPE_CPU_USAGE = 0x1c
 internal const val CONTENT_TYPE_PERF_METRICS = 0x1d
 internal const val CONTENT_TYPE_MUTE_SOUNDS = 0x1e
 internal const val CONTENT_TYPE_CREDITS = 0x1f
+
+// Extension class descriptor for RTS touch controls helper
+internal const val EXTENSION_RTS_HELPER = "Lapp/revanced/extension/gamehub/rts/RtsTouchHelper;"

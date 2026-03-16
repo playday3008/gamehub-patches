@@ -126,6 +126,10 @@ public final class app/revanced/patches/gamehub/ui/overlay/PerformanceMetricsPat
 	public static final fun getPerformanceMetricsPatch ()Lapp/revanced/patcher/patch/Patch;
 }
 
+public final class app/revanced/patches/gamehub/ui/rts/RtsTouchControlsPatchKt {
+	public static final fun getRtsTouchControlsPatch ()Lapp/revanced/patcher/patch/Patch;
+}
+
 public final class app/revanced/patches/gamehub/ui/search/HideHotSearchesPatchKt {
 	public static final fun getHideHotSearchesPatch ()Lapp/revanced/patcher/patch/Patch;
 }
