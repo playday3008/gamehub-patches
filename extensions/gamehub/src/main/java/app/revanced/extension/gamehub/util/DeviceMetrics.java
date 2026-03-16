@@ -108,8 +108,8 @@ public final class DeviceMetrics {
                 return -1;
             }
 
-            // Single percentage value (integer or float like "45.00").
-            line = line.trim();
+            // Single percentage value (integer, float like "45.00", or "45 %" with suffix).
+            line = line.trim().replace("%", "").trim();
             if (line.contains(".")) {
                 return (int) Float.parseFloat(line);
             }
@@ -139,6 +139,17 @@ public final class DeviceMetrics {
             gpuSysfsPath = qualcommBusy;
             gpuPathResolved = true;
             GHLog.PERF.d("GPU sysfs: Qualcomm gpubusy");
+            return gpuSysfsPath;
+        }
+
+        // Qualcomm Adreno (newer SoCs like Snapdragon 8 Elite): unified kernel GPU path.
+        // Outputs "X %" format.
+        String qualcommKernelGpu = "/sys/kernel/gpu/gpu_busy";
+        if (new File(qualcommKernelGpu).canRead()) {
+            gpuFormat = GPU_FORMAT_PERCENTAGE;
+            gpuSysfsPath = qualcommKernelGpu;
+            gpuPathResolved = true;
+            GHLog.PERF.d("GPU sysfs: Qualcomm kernel gpu_busy");
             return gpuSysfsPath;
         }
 
