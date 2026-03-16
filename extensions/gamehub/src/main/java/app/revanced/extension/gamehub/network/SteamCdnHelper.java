@@ -204,16 +204,13 @@ public class SteamCdnHelper {
             L.d("fetchBatch: HTTP " + code);
             if (code != 200) return new HashMap<>();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-            try {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"))) {
                 StringBuilder sb = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
                     sb.append(line);
                 }
                 return parseBatchResponse(sb.toString());
-            } finally {
-                reader.close();
             }
         } finally {
             if (conn != null) conn.disconnect();

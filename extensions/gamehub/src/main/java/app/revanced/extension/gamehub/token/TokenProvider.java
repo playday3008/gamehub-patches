@@ -215,15 +215,16 @@ public class TokenProvider {
             L.d("fetchTokenFromService: HTTP " + code);
             if (code != 200) return null;
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+            String body;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                body = sb.toString();
             }
-            reader.close();
 
-            String body = sb.toString();
             L.d("fetchTokenFromService: body=" + body.substring(0, Math.min(body.length(), 200)));
             return parseTokenFromJson(body);
         } finally {
@@ -318,15 +319,15 @@ public class TokenProvider {
             L.d("forceRefreshFromService: HTTP " + code);
             if (code != 200) return null;
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+            String responseBody;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                responseBody = sb.toString();
             }
-            reader.close();
-
-            String responseBody = sb.toString();
             L.d("forceRefreshFromService: body=" + responseBody.substring(0, Math.min(responseBody.length(), 200)));
             return parseTokenFromJson(responseBody);
         } catch (Exception e) {
