@@ -13,9 +13,15 @@ import java.util.List;
 /**
  * Replaces the hardcoded currency symbols (¥/￥) with the real currency code
  * from the Steam PICS database (e.g. "Account (USD)", "Game Price (USD)").
+ *
+ * <p>All public methods synchronize on {@link #LOCK} because {@link #setCurrency}
+ * may be called from a background thread (Steam PICS callback) while
+ * {@link #updateLabel}/{@link #updateGamePriceLabel} run on the UI thread.
  */
 @SuppressLint("SetTextI18n")
 public final class AccountCurrencyHelper {
+    private static final Object LOCK = new Object();
+
     private static String sCurrency = null;
     private static final List<WeakReference<TextView>> sPendingAccountLabels = new ArrayList<>();
     private static final List<WeakReference<TextView>> sPendingGamePriceLabels = new ArrayList<>();
@@ -27,10 +33,11 @@ public final class AccountCurrencyHelper {
      */
     public static void setCurrency(String currency) {
         if (currency == null || currency.isEmpty()) return;
-        sCurrency = currency;
-
-        flushPending(sPendingAccountLabels, "Account", currency);
-        flushPending(sPendingGamePriceLabels, "Game Price", currency);
+        synchronized (LOCK) {
+            sCurrency = currency;
+            flushPending(sPendingAccountLabels, "Account", currency);
+            flushPending(sPendingGamePriceLabels, "Game Price", currency);
+        }
     }
 
     private static void flushPending(List<WeakReference<TextView>> list, String prefix, String currency) {
@@ -52,10 +59,12 @@ public final class AccountCurrencyHelper {
      */
     public static void updateLabel(TextView labelView) {
         if (labelView == null) return;
-        if (sCurrency != null) {
-            labelView.setText("Account (" + sCurrency + ")");
-        } else {
-            sPendingAccountLabels.add(new WeakReference<>(labelView));
+        synchronized (LOCK) {
+            if (sCurrency != null) {
+                labelView.setText("Account (" + sCurrency + ")");
+            } else {
+                sPendingAccountLabels.add(new WeakReference<>(labelView));
+            }
         }
     }
 
@@ -72,10 +81,12 @@ public final class AccountCurrencyHelper {
         View next = parent.getChildAt(index + 1);
         if (!(next instanceof TextView)) return;
         TextView label = (TextView) next;
-        if (sCurrency != null) {
-            label.setText("Game Price (" + sCurrency + ")");
-        } else {
-            sPendingGamePriceLabels.add(new WeakReference<>(label));
+        synchronized (LOCK) {
+            if (sCurrency != null) {
+                label.setText("Game Price (" + sCurrency + ")");
+            } else {
+                sPendingGamePriceLabels.add(new WeakReference<>(label));
+            }
         }
     }
 }

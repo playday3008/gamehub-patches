@@ -309,8 +309,10 @@ public class TokenProvider {
             conn.setDoOutput(true);
 
             String body = "{\"token\":\"" + currentToken + "\"}";
-            conn.getOutputStream().write(body.getBytes("UTF-8"));
-            conn.getOutputStream().flush();
+            java.io.OutputStream out = conn.getOutputStream();
+            out.write(body.getBytes("UTF-8"));
+            out.flush();
+            out.close();
 
             int code = conn.getResponseCode();
             L.d("forceRefreshFromService: HTTP " + code);

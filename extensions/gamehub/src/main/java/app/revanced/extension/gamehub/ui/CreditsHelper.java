@@ -22,6 +22,7 @@ import android.widget.TextView;
 import app.revanced.extension.gamehub.util.GHLog;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +37,18 @@ public class CreditsHelper {
     private static final int COLOR_BTN = 0xFF2E7D32;
     private static final int COLOR_LINK = 0xFF8D57FC;
 
-    private static final List<Object[]> credits = new ArrayList<>();
+    private static final class CreditEntry {
+        final String feature;
+        final Map<String, String> authors = new LinkedHashMap<>();
+
+        CreditEntry(String feature) {
+            this.feature = feature;
+        }
+    }
+
+    // Insertion-ordered list for display; keyed lookup via creditsByFeature.
+    private static final List<CreditEntry> credits = new ArrayList<>();
+    private static final Map<String, CreditEntry> creditsByFeature = new LinkedHashMap<>();
 
     /**
      * Registers a credit entry. Multiple calls with the same feature name
@@ -47,18 +59,14 @@ public class CreditsHelper {
      * @param author  the author name
      * @param url     the author URL (empty string if none)
      */
-    @SuppressWarnings("unchecked")
     public static void addCredit(String feature, String author, String url) {
-        for (Object[] entry : credits) {
-            if (entry[0].equals(feature)) {
-                Map<String, String> authors = (Map<String, String>) entry[1];
-                authors.putIfAbsent(author, url);
-                return;
-            }
+        CreditEntry entry = creditsByFeature.get(feature);
+        if (entry == null) {
+            entry = new CreditEntry(feature);
+            creditsByFeature.put(feature, entry);
+            credits.add(entry);
         }
-        Map<String, String> authors = new java.util.LinkedHashMap<>();
-        authors.put(author, url);
-        credits.add(new Object[] {feature, authors});
+        entry.authors.putIfAbsent(author, url);
     }
 
     /**
@@ -139,18 +147,14 @@ public class CreditsHelper {
         return root;
     }
 
-    @SuppressWarnings("unchecked")
-    private static LinearLayout createCreditEntry(Context ctx, Object[] entry) {
-        String feature = (String) entry[0];
-        Map<String, String> authors = (Map<String, String>) entry[1];
-
+    private static LinearLayout createCreditEntry(Context ctx, CreditEntry entry) {
         LinearLayout row = new LinearLayout(ctx);
         row.setOrientation(LinearLayout.VERTICAL);
         row.setPadding(0, dpToPx(ctx, 8), 0, dpToPx(ctx, 8));
 
         // Feature name.
         TextView featureTv = new TextView(ctx);
-        featureTv.setText(feature);
+        featureTv.setText(entry.feature);
         featureTv.setTextColor(COLOR_TEXT_PRIMARY);
         featureTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
         featureTv.setTypeface(null, Typeface.BOLD);
@@ -165,7 +169,7 @@ public class CreditsHelper {
 
         SpannableStringBuilder sb = new SpannableStringBuilder("by ");
         boolean first = true;
-        for (Map.Entry<String, String> author : authors.entrySet()) {
+        for (Map.Entry<String, String> author : entry.authors.entrySet()) {
             if (!first) sb.append(", ");
             first = false;
 

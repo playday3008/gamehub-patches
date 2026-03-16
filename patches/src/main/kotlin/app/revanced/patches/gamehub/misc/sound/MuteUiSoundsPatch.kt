@@ -15,6 +15,8 @@ import app.revanced.patches.gamehub.misc.settings.settingsMenuPatch
 
 private const val SOUND_HELPER = "Lcom/xj/common/utils/GHSoundPlayHelper;"
 
+// The :play label needs a target instruction; nop serves as the fall-through
+// anchor when injected at index 0 (the original first instruction follows it).
 private const val MUTE_GUARD =
     """
     invoke-static {}, $EXTENSION_PREFS->isSoundMuted()Z

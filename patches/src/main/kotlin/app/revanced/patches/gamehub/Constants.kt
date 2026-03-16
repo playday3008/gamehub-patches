@@ -17,7 +17,8 @@ internal const val EXTENSION_PERF_METRICS = "Lapp/revanced/extension/gamehub/ui/
 internal const val EXTENSION_PLAYTIME_HELPER = "Lapp/revanced/extension/gamehub/playtime/PlaytimeHelper;"
 internal const val EXTENSION_CREDITS_HELPER = "Lapp/revanced/extension/gamehub/ui/CreditsHelper;"
 
-// Content-type constants for custom settings menu items
+// Content-type constants for custom settings menu items.
+// 0x19 is reserved (unused).
 internal const val CONTENT_TYPE_SD_CARD_STORAGE = 0x18
 internal const val CONTENT_TYPE_API = 0x1a
 internal const val CONTENT_TYPE_LOG_REQUESTS = 0x1b

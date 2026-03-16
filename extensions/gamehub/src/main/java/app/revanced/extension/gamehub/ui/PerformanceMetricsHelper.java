@@ -114,7 +114,9 @@ public final class PerformanceMetricsHelper {
     };
 
     private static void scheduleRefresh() {
-        handler.postDelayed(refreshRunnable, REFRESH_INTERVAL_MS);
+        if (refreshLoopRunning) {
+            handler.postDelayed(refreshRunnable, REFRESH_INTERVAL_MS);
+        }
     }
 
     private static void refreshMetrics() {

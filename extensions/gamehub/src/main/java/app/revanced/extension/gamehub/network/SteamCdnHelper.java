@@ -4,6 +4,8 @@ import android.content.SharedPreferences;
 
 import app.revanced.extension.gamehub.util.GHLog;
 import com.blankj.utilcode.util.Utils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -221,48 +223,40 @@ public class SteamCdnHelper {
     /**
      * Parses a batch response from {@code IStoreBrowseService/GetItems/v1}.
      *
-     * <p>Iterates through {@code store_items}, extracting each item's {@code appid},
-     * {@code asset_url_format}, and {@code header} to build the resolved URL.
+     * <p>Iterates through {@code response.store_items[]}, extracting each item's
+     * {@code appid}, {@code assets.asset_url_format}, and {@code assets.header}
+     * to build the resolved URL.
      */
     private static Map<Integer, String> parseBatchResponse(String json) {
         Map<Integer, String> results = new HashMap<>();
         if (json == null || json.isEmpty()) return results;
 
-        String appidKey = "\"appid\"";
-        String formatKey = "\"asset_url_format\"";
-        String headerKey = "\"header\"";
+        try {
+            JSONObject root = new JSONObject(json);
+            JSONObject response = root.optJSONObject("response");
+            if (response == null) return results;
 
-        int searchFrom = 0;
-        while (true) {
-            // Find next appid in the response.
-            int appidIdx = json.indexOf(appidKey, searchFrom);
-            if (appidIdx < 0) break;
+            JSONArray items = response.optJSONArray("store_items");
+            if (items == null) return results;
 
-            // Boundary: the next appid (or end of string) delimits this item.
-            int nextAppidIdx = json.indexOf(appidKey, appidIdx + appidKey.length());
-            int boundary = nextAppidIdx > 0 ? nextAppidIdx : json.length();
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.optJSONObject(i);
+                if (item == null) continue;
 
-            // Extract the integer appid value.
-            int appId = extractIntValueAt(json, appidIdx, appidKey.length());
-            if (appId > 0) {
-                // Find asset_url_format within this item.
-                int formatIdx = json.indexOf(formatKey, appidIdx);
-                if (formatIdx > 0 && formatIdx < boundary) {
-                    String formatUrl = extractStringValueAt(json, formatIdx, formatKey.length());
-                    if (formatUrl != null) {
-                        // Find header after asset_url_format within this item.
-                        int headerIdx = json.indexOf(headerKey, formatIdx);
-                        if (headerIdx > 0 && headerIdx < boundary) {
-                            String header = extractStringValueAt(json, headerIdx, headerKey.length());
-                            if (header != null) {
-                                results.put(appId, formatUrl.replace("${FILENAME}", header));
-                            }
-                        }
-                    }
+                int appId = item.optInt("appid", -1);
+                if (appId <= 0) continue;
+
+                JSONObject assets = item.optJSONObject("assets");
+                if (assets == null) continue;
+
+                String formatUrl = assets.optString("asset_url_format", null);
+                String header = assets.optString("header", null);
+                if (formatUrl != null && header != null) {
+                    results.put(appId, formatUrl.replace("${FILENAME}", header));
                 }
             }
-
-            searchFrom = boundary;
+        } catch (Exception e) {
+            L.w("parseBatchResponse failed", e);
         }
 
         return results;
@@ -314,46 +308,5 @@ public class SteamCdnHelper {
         if (url == null) return null;
         String rewritten = rewriteCdnUrl(url);
         return rewritten != null ? rewritten : url;
-    }
-
-    /**
-     * Extracts a JSON string value starting from a known key position.
-     * Expects the pattern: {@code "key" : "value"} at the given offset.
-     */
-    private static String extractStringValueAt(String json, int keyIdx, int keyLen) {
-        int colonIdx = json.indexOf(':', keyIdx + keyLen);
-        if (colonIdx < 0) return null;
-
-        int startQuote = json.indexOf('"', colonIdx + 1);
-        if (startQuote < 0) return null;
-
-        int endQuote = json.indexOf('"', startQuote + 1);
-        if (endQuote < 0) return null;
-
-        return json.substring(startQuote + 1, endQuote);
-    }
-
-    /**
-     * Extracts a JSON integer value starting from a known key position.
-     * Expects the pattern: {@code "key" : 12345} at the given offset.
-     *
-     * @return the parsed integer, or -1 on failure
-     */
-    private static int extractIntValueAt(String json, int keyIdx, int keyLen) {
-        int colonIdx = json.indexOf(':', keyIdx + keyLen);
-        if (colonIdx < 0) return -1;
-
-        int numStart = colonIdx + 1;
-        while (numStart < json.length() && !Character.isDigit(json.charAt(numStart))) numStart++;
-        int numEnd = numStart;
-        while (numEnd < json.length() && Character.isDigit(json.charAt(numEnd))) numEnd++;
-
-        if (numStart >= json.length() || numStart == numEnd) return -1;
-
-        try {
-            return Integer.parseInt(json.substring(numStart, numEnd));
-        } catch (NumberFormatException e) {
-            return -1;
-        }
     }
 }

@@ -1,6 +1,7 @@
 package app.revanced.patches.gamehub.misc.ota
 
 import app.revanced.patcher.extensions.addInstruction
+import app.revanced.patcher.extensions.getInstruction
 import app.revanced.patcher.firstMethod
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.patch.resourcePatch
@@ -9,6 +10,7 @@ import app.revanced.patches.gamehub.GAMEHUB_VERSION
 import app.revanced.patches.gamehub.misc.credits.addCredit
 import app.revanced.patches.gamehub.misc.credits.creditsPatch
 import app.revanced.util.indexOfFirstInstructionOrThrow
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private val otaCleanupResourcePatch = resourcePatch {
@@ -42,8 +44,9 @@ val disableOtaUpdatesPatch = bytecodePatch(
                     ?.reference
                     ?.let { it is StringReference && it.string.startsWith("https://www.xiaoji.com") } == true
             }
-            // Override the URL string with empty string so OTA calls fail silently
-            addInstruction(urlIndex + 1, "const-string p1, \"http://127.0.0.1\"")
+            val urlReg = getInstruction<OneRegisterInstruction>(urlIndex).registerA
+            // Override the URL register so OTA calls fail silently.
+            addInstruction(urlIndex + 1, "const-string v$urlReg, \"http://127.0.0.1\"")
         }
 
         addCredit(

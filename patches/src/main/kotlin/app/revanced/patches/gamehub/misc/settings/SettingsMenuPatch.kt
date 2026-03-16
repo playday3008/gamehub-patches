@@ -193,7 +193,7 @@ internal fun addSteamSetting(
     //    Constructor: <init>(IILandroid/util/SparseArray;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
     //    Registers: v0=this, v1=type(5), v2=contentType, v3=sparseArray(null),
     //               v4=Z(false), v5=defaultBitMask(0xc), v6=marker(null).
-    //    Each block is exactly 9 instructions; viewModelInsertionIndex is advanced accordingly.
+    //    Each block is exactly 10 instructions; viewModelInsertionIndex is advanced accordingly.
     settingItemViewModelMethod.addInstructions(
         viewModelInsertionIndex,
         """
