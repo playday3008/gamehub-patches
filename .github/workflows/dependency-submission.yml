@@ -24,7 +24,7 @@ jobs:
           java-version: '17'
 
       - name: Submit dependencies
-        uses: gradle/actions/dependency-submission@v5
+        uses: gradle/actions/dependency-submission@v6
         env:
           ORG_GRADLE_PROJECT_githubPackagesUsername: ${{ github.actor }}
           ORG_GRADLE_PROJECT_githubPackagesPassword: ${{ github.token }}
